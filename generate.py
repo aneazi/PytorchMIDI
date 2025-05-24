@@ -13,8 +13,8 @@ midi_dir = "../maestro-v3.0.0"
 output_midi= "output.mid"
 instrument_name = "Acoustic Grand Piano"
 seq_len = 25
-num_predictions = 100
-temperature = 2.5
+num_predictions = 120
+temperature = 2.0
 sample_rate = 16000
 time_stretch = 1.0
 

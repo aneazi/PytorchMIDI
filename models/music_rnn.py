@@ -7,8 +7,8 @@ class MusicRNN(nn.Module):
         self,
         input_size: int=3,
         hidden_size: int = 128,
-        num_layers: int = 3,
-        dropout: int = 0.2,
+        num_layers: int = 1,
+        dropout: int = 2.5,
     ):
         super().__init__()
         self.lstm=nn.LSTM(

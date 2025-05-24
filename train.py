@@ -17,10 +17,10 @@ def main():
     device = torch.device("mps" if torch.backends.mps.is_available() else "cpu")
     print(f"Using device: {device}")
     seq_len=25
-    max_files=20
+    max_files=10
     batch_size=64
-    learning_rate=0.001
-    num_epochs=100
+    learning_rate=0.005
+    num_epochs=50
     dataset = MidiSequenceDataset(
         midi_dir = "../maestro-v3.0.0",
         seq_len = seq_len,
