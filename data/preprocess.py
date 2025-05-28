@@ -8,57 +8,46 @@ from typing import List, Optional, Tuple, Union
 
 
 
-def midi_to_notes(midi_file: str) -> pd.DataFrame:
-    """Parses MIDI file and returns a dataframe with columns:
-    pitch | start | end | step | duration"""
+def midi_to_pianoroll(midi_file: str, fs: int = 20, pitch_range: tuple = (21, 109)) -> np.ndarray:
+    """Parses MIDI file and returns a piano-roll matrix with columns:
+    Arguments: filename, frames per second/sampling rate
+    Returns array of shape (T, numpitches)"""
+    
     pm = pretty_midi.PrettyMIDI(midi_file)
-    instrument = pm.instruments[0]
-    notes = collections.defaultdict(list)
+    roll = pm.get_piano_roll()[pitch_range[0]:pitch_range[1]]
+    piano_roll=(roll.T/100.0).astype(np.float32)
+    ##TEST PIANOROLL
+    piano_roll= np.zeros((piano_roll.shape[0], piano_roll.shape[1]), dtype=np.float32)
+    print(piano_roll.shape)
+    for row in piano_roll:
+        print(row)
+    
+    return piano_roll
+ 
+ 
+def load_all_rolls(midi_dir: str, fs: int = 20, pitch_range: tuple=(21, 109), max_files: Optional[int]=None) -> np.ndarray:
+    """Load max_files into one pianoroll
 
-    # Sort the notes by start time
-    sorted_notes = sorted(instrument.notes, key=lambda note: note.start)
-    prev_start = sorted_notes[0].start
+    Args:
+        midi_dir (str): Directory path
+        fs (int, optional): frames per second. Defaults to 20.
+        pitch_range (tuple, optional): MIDI pitch range. Defaults to (21, 109).
+        max_files (Optional[int], optional): Number of files to train on. Defaults to None.
 
-    for note in sorted_notes:
-        start = note.start
-        end = note.end
-        notes['pitch'].append(note.pitch)
-        notes['start'].append(start)
-        notes['end'].append(end)
-        notes['step'].append(start - prev_start)
-        notes['duration'].append(end - start)
-        prev_start = start
-
-    return pd.DataFrame({name: np.array(value) for name, value in notes.items()})
-
-def notes_df_to_array(
-    notes_df: pd.DataFrame,
-    feature_cols: List[str] = ['pitch','step','duration']
-) -> np.ndarray:
+    Returns:
+        np.ndarray: (total_frames, num_pitches)
     """
-    Convert the notes DataFrame into a (N, len(feature_cols)) float32 array.
-    By default returns (N,3) with [pitch, step, duration].
-    """
-    return notes_df[feature_cols].to_numpy(dtype=np.float32)
-
-
-def load_all_notes(midi_dir: str, max_files: Optional[int]=None) -> np.ndarray:
-    midi_dir = Path(midi_dir)
-    paths = list(midi_dir.rglob('*.mid')) + list(midi_dir.rglob('*.midi'))
-    if max_files:
-        paths = paths[:max_files]
-    arrays = []
-    for p in paths:
-        df = midi_to_notes(str(p))
-        if df.empty:
-            continue
-        arr = notes_df_to_array(df)
-        arrays.append(arr)
-
-    return np.vstack(arrays)
-
-
-if __name__ == "__main__":
-    sample = load_all_notes("../maestro-v3.0.0", 100)
-    print(sample.shape)
-    print(sample)
+    rolls=[]
+    count = 0
+    for mid_path in Path(midi_dir).rglob("*.mid*"):
+        if max_files is not None and count >= max_files:
+            break
+        try:
+            pr = midi_to_pianoroll(str(mid_path), fs, pitch_range)
+            rolls.append(pr)
+            count += 1
+        except Exception as e:
+            print(f"Failed to parse {mid_path}: {e}")
+    if not rolls:
+        return np.zeros((0, pitch_range[1] - pitch_range[0]), dtype=np.float32)
+    return np.vstack(rolls)

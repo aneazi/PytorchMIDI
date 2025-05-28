@@ -16,71 +16,53 @@ def main():
     
     device = torch.device("mps" if torch.backends.mps.is_available() else "cpu")
     print(f"Using device: {device}")
-    seq_len=25
+    best_loss = float('inf')
+    seq_len=5
     max_files=10
+    pitch_range=(21, 109)  # MIDI pitch range
+    fs=20  # frames per second
     batch_size=64
-    learning_rate=0.005
+    learning_rate=0.001
     num_epochs=50
     dataset = MidiSequenceDataset(
-        midi_dir = "../maestro-v3.0.0",
+        midi_dir = "ToySet",
         seq_len = seq_len,
-        max_files = max_files
+        fs = fs,
+        pitch_range = pitch_range,
+        max_files = max_files,
+        max_frames = 10  # load all frames
     )
     loader = DataLoader(dataset, batch_size=batch_size, shuffle=True)
-    print(f"Loaded {len(dataset)} sequences → {len(loader)} batches per epoch")
-    model = MusicRNN(input_size=3, hidden_size=128).to(device)
-    criterion_pitch    = nn.CrossEntropyLoss()  # for 128-way pitch classification
-    criterion_step     = nn.MSELoss()           # for scalar step prediction
-    criterion_duration = nn.MSELoss()           # for scalar duration prediction
-
+    print(f"Loaded {len(dataset)} sequences -> {len(loader)} batches per epoch")
+    
+    num_pitches = pitch_range[1] - pitch_range[0]  # 88 pitches in MIDI
+    model = MusicRNN(num_pitches=num_pitches, hidden_size=256, num_layers=2, dropout=0.2).to(device)
+    criterion = nn.BCEWithLogitsLoss()  # for 128-way pitch classification
     optimizer = optim.Adam(model.parameters(), lr=learning_rate)
+    
+    best_loss = float('inf')
+    best_model = None
+    # Training loop
     for epoch in range(1, num_epochs + 1):
         model.train()
-        sum_loss = 0.0
-        sum_pitch = 0.0
-        sum_step = 0.0
-        sum_duration = 0.0
+        running_loss = 0.0
+        for batch_x, batch_y in loader:
+            batch_x = batch_x.to(device)   # (B, seq_len, num_pitches)
+            batch_y = batch_y.to(device)   # (B, num_pitches)
 
-        for batch_seq, batch_nxt in loader:
-            batch_seq = batch_seq.to(device)   # (B, SEQ_LEN, 3)
-            batch_nxt = batch_nxt.to(device)   # (B, 3)
             optimizer.zero_grad()
-            preds = model(batch_seq)
-            # unpack predictions & targets
-            pitch_logits = preds['pitch']             # (B, 128)
-            step_pred    = preds['step'].squeeze(-1)  # (B,)
-            dur_pred     = preds['duration'].squeeze(-1)  # (B,)
-
-            true_pitch    = batch_nxt[:, 0].long()    # (B,)
-            true_step     = batch_nxt[:, 1]           # (B,)
-            true_duration = batch_nxt[:, 2]           # (B,)
-
-            # compute individual losses
-            loss_p = criterion_pitch(pitch_logits, true_pitch)
-            loss_s = criterion_step(step_pred,    true_step)
-            loss_d = criterion_duration(dur_pred, true_duration)
-
-            # weighted sum
-            loss = 0.05 * loss_p + 1.0 * loss_s + 1.0 * loss_d
+            logits = model(batch_x)        # (B, num_pitches)
+            loss = criterion(logits, batch_y)
             loss.backward()
             optimizer.step()
-            sum_loss += loss.item()
-            sum_pitch += loss_p.item()
-            sum_step += loss_s.item()
-            sum_duration += loss_d.item()
-        # report averages
-        batches = len(loader)
-        print(f"Epoch {epoch:2d}/{num_epochs}  "
-              f"loss={sum_loss/batches:.4f}  "
-              f"pitch={sum_pitch/batches:.4f}  "
-              f"step={sum_step/batches:.4f}  "
-              f"dur={sum_duration/batches:.4f}")
-    torch.save(model.state_dict(), "music_rnn.pt")
-    print("Model weights saved to music_rnn.pt")
 
-
- 
-
+            running_loss += loss.item()
+        avg_loss = running_loss / len(loader)
+        print(f"Epoch {epoch}/{num_epochs}, Loss: {avg_loss:.4f}")
+        if avg_loss < best_loss:
+            best_loss = avg_loss
+            best_model = model.state_dict()
+    torch.save(best_model, "music_rnn.pt")
 
 if __name__ == "__main__":
     main()
