@@ -19,12 +19,17 @@ sample_rate = 16000
 time_stretch = 1.0
 
 def play_music(midi_filename):
-  '''Stream music_file in a blocking manner'''
-  clock = pygame.time.Clock()
-  pygame.mixer.music.load(midi_filename)
-  pygame.mixer.music.play()
-  while pygame.mixer.music.get_busy():
-    clock.tick(30) # check if playback has finished
+    """
+    Play a MIDI file using pygame.
+    
+    Args:
+        midi_filename (_type_): Filename of the MIDI file to play.
+    """
+    clock = pygame.time.Clock()
+    pygame.mixer.music.load(midi_filename)
+    pygame.mixer.music.play()
+    while pygame.mixer.music.get_busy():
+        clock.tick(30) # check if playback has finished
 
 def load_model(device: torch.device) -> MusicRNN:
     """Instantiate the model, load weights, switch to eval."""
@@ -58,17 +63,17 @@ def sample_sequence(
             out = model(x)
         # pitch: sample from softmax
         logits = out['pitch'] / temperature           # (1,128)
-        probs  = torch.softmax(logits, dim=-1)        # (1,128)
-        pitch  = torch.multinomial(probs, num_samples=1).item()
+        probs = torch.softmax(logits, dim=-1)        # (1,128)
+        pitch = torch.multinomial(probs, num_samples=1).item()
         # step & duration: direct scalars
-        step     = out['step'].item()
+        step = out['step'].item()
         duration = out['duration'].item()
         # clamp to non-negative
-        step     = max(step, 0.0) * time_stretch
+        step = max(step, 0.0) * time_stretch
         duration = max(duration, 0.0) * time_stretch
 
         start = prev_start + step
-        end   = start + duration
+        end = start + duration
         gen.append((pitch, step, duration, start, end))
         prev_start = start
 

@@ -16,11 +16,19 @@ def main():
     
     device = torch.device("mps" if torch.backends.mps.is_available() else "cpu")
     print(f"Using device: {device}")
+    """
+    - Takes length of sequence and number of files to load.
+    """
     seq_len=25
     max_files=10
     batch_size=64
     learning_rate=0.005
     num_epochs=50
+    """
+    - Loads MIDI dataset from MAESTRO v3.0.0.
+    - Each sequence is of length 'seq_len'.
+    - Contains 3 features: pitch, step, duration.
+    """
     dataset = MidiSequenceDataset(
         midi_dir = "../maestro-v3.0.0",
         seq_len = seq_len,
@@ -29,11 +37,15 @@ def main():
     loader = DataLoader(dataset, batch_size=batch_size, shuffle=True)
     print(f"Loaded {len(dataset)} sequences → {len(loader)} batches per epoch")
     model = MusicRNN(input_size=3, hidden_size=128).to(device)
-    criterion_pitch    = nn.CrossEntropyLoss()  # for 128-way pitch classification
-    criterion_step     = nn.MSELoss()           # for scalar step prediction
-    criterion_duration = nn.MSELoss()           # for scalar duration prediction
+    criterion_pitch = nn.CrossEntropyLoss()  # for 128-way pitch classification
+    criterion_step = nn.MSELoss()            # for scalar step prediction
+    criterion_duration = nn.MSELoss()        # for scalar duration prediction
 
     optimizer = optim.Adam(model.parameters(), lr=learning_rate)
+    """
+    - Training loop.
+    - Saves the best model weights to 'music_rnn.pt'.
+    """
     for epoch in range(1, num_epochs + 1):
         model.train()
         sum_loss = 0.0
@@ -48,11 +60,11 @@ def main():
             preds = model(batch_seq)
             # unpack predictions & targets
             pitch_logits = preds['pitch']             # (B, 128)
-            step_pred    = preds['step'].squeeze(-1)  # (B,)
-            dur_pred     = preds['duration'].squeeze(-1)  # (B,)
+            step_pred = preds['step'].squeeze(-1)     # (B,)
+            dur_pred = preds['duration'].squeeze(-1)  # (B,)
 
-            true_pitch    = batch_nxt[:, 0].long()    # (B,)
-            true_step     = batch_nxt[:, 1]           # (B,)
+            true_pitch = batch_nxt[:, 0].long()       # (B,)
+            true_step = batch_nxt[:, 1]               # (B,)
             true_duration = batch_nxt[:, 2]           # (B,)
 
             # compute individual losses
@@ -77,9 +89,6 @@ def main():
               f"dur={sum_duration/batches:.4f}")
     torch.save(model.state_dict(), "music_rnn.pt")
     print("Model weights saved to music_rnn.pt")
-
-
- 
 
 
 if __name__ == "__main__":

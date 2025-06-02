@@ -43,22 +43,27 @@ def notes_df_to_array(
 
 
 def load_all_notes(midi_dir: str, max_files: Optional[int]=None) -> np.ndarray:
+    """
+    - Load all MIDIs from a directory and convert them to a numpy array.
+    - Each MIDI is converted to a (N, 3) array where N is the number of notes. 
+    - And the columns are: [pitch, step, duration].
+    Args:
+        midi_dir (str): Path to the directory containing MIDI files.
+        max_files (Optional[int], optional): Number of files to train on. Defaults to None.
+    Returns:
+        np.ndarray: A 2D numpy array of shape (N, 3) where N is the total number of notes across all MIDI files.
+    """
     midi_dir = Path(midi_dir)
     paths = list(midi_dir.rglob('*.mid')) + list(midi_dir.rglob('*.midi'))
     if max_files:
         paths = paths[:max_files]
     arrays = []
-    for p in paths:
-        df = midi_to_notes(str(p))
+    # Paths loop
+    for path in paths:
+        df = midi_to_notes(str(path))
         if df.empty:
             continue
         arr = notes_df_to_array(df)
         arrays.append(arr)
 
     return np.vstack(arrays)
-
-
-if __name__ == "__main__":
-    sample = load_all_notes("../maestro-v3.0.0", 100)
-    print(sample.shape)
-    print(sample)

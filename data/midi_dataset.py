@@ -5,6 +5,7 @@ from pathlib import Path
 from typing import Optional, Union, Tuple
 
 from data.preprocess import load_all_notes
+
 class MidiSequenceDataset(Dataset):
     def __init__(
         self,
@@ -12,6 +13,14 @@ class MidiSequenceDataset(Dataset):
         seq_len: int,
         max_files: Optional[int] = None
 ):
+        """
+        - Gets all MIDI files from a directory, converts them to sequences of notes
+        - Preps for model training.
+        Args:
+            midi_dir (str): Directory containing MIDI files.
+            seq_len (int): Length of each sequence to be used for training.
+            max_files (Optional[int], optional): Number of files to train on. Defaults to None.
+        """
         notes = load_all_notes(midi_dir, max_files=max_files)
         total_notes, features = notes.shape
         self.seq_len=seq_len
