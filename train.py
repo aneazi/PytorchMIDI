@@ -20,12 +20,12 @@ def main():
     seq_len=5
     max_files=10
     pitch_range=(21, 109)  # MIDI pitch range
-    fs=20  # frames per second
+    fs=100  # frames per second
     batch_size=64
     learning_rate=0.001
     num_epochs=50
     dataset = MidiSequenceDataset(
-        midi_dir = "ToySet",
+        midi_dir = "../maestro-v3.0.0",
         seq_len = seq_len,
         fs = fs,
         pitch_range = pitch_range,

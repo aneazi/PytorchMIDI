@@ -8,29 +8,25 @@ from typing import List, Optional, Tuple, Union
 
 
 
-def midi_to_pianoroll(midi_file: str, fs: int = 20, pitch_range: tuple = (21, 109)) -> np.ndarray:
+def midi_to_pianoroll(midi_file: str, fs: int = 100, pitch_range: tuple = (21, 109)) -> np.ndarray:
     """Parses MIDI file and returns a piano-roll matrix with columns:
     Arguments: filename, frames per second/sampling rate
     Returns array of shape (T, numpitches)"""
     
     pm = pretty_midi.PrettyMIDI(midi_file)
     roll = pm.get_piano_roll()[pitch_range[0]:pitch_range[1]]
-    piano_roll=(roll.T/100.0).astype(np.float32)
-    ##TEST PIANOROLL
-    piano_roll= np.zeros((piano_roll.shape[0], piano_roll.shape[1]), dtype=np.float32)
+    piano_roll=(roll.T).astype(np.float32)
+    piano_roll[piano_roll > 0] = 100.0
     print(piano_roll.shape)
-    for row in piano_roll:
-        print(row)
-    
     return piano_roll
  
  
-def load_all_rolls(midi_dir: str, fs: int = 20, pitch_range: tuple=(21, 109), max_files: Optional[int]=None) -> np.ndarray:
+def load_all_rolls(midi_dir: str, fs: int = 100, pitch_range: tuple=(21, 109), max_files: Optional[int]=None) -> np.ndarray:
     """Load max_files into one pianoroll
 
     Args:
         midi_dir (str): Directory path
-        fs (int, optional): frames per second. Defaults to 20.
+        fs (int, optional): frames per second. Defaults to 100.
         pitch_range (tuple, optional): MIDI pitch range. Defaults to (21, 109).
         max_files (Optional[int], optional): Number of files to train on. Defaults to None.
 

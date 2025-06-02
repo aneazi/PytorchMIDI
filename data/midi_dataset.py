@@ -9,7 +9,7 @@ class MidiSequenceDataset(Dataset):
         self,
         midi_dir: str,
         seq_len: int,
-        fs: int=20,
+        fs: int=100,
         pitch_range: tuple=(21, 109),
         max_files: int = None,
         max_frames: int = None
@@ -19,7 +19,7 @@ class MidiSequenceDataset(Dataset):
         Args:
             midi_dir (str): Directory of dataset
             seq_len (int): Number of timesteps per sequence
-            fs (int, optional): Sampling rate. Defaults to 20.
+            fs (int, optional): Sampling rate. Defaults to 100.
             pitch_range (tuple, optional): Pitch range. Defaults to (21, 109).
             max_files (int, optional): Limits MIDI files loaded. Defaults to None.
             max_frames (int, optional): Limites frames loaded. Defaults to None.
