@@ -13,31 +13,31 @@ def main():
     random.seed(seed)
     np.random.seed(seed)
     torch.manual_seed(seed)
-    
     device = torch.device("mps" if torch.backends.mps.is_available() else "cpu")
     print(f"Using device: {device}")
     best_loss = float('inf')
-    seq_len=5
-    max_files=10
+    seq_len=100
+    max_files=1
     pitch_range=(21, 109)  # MIDI pitch range
     fs=100  # frames per second
     batch_size=64
     learning_rate=0.001
     num_epochs=50
+    max_frames = None
     dataset = MidiSequenceDataset(
         midi_dir = "../maestro-v3.0.0",
         seq_len = seq_len,
         fs = fs,
         pitch_range = pitch_range,
         max_files = max_files,
-        max_frames = 10  # load all frames
+        max_frames = max_frames  # load all frames
     )
     loader = DataLoader(dataset, batch_size=batch_size, shuffle=True)
     print(f"Loaded {len(dataset)} sequences -> {len(loader)} batches per epoch")
     
     num_pitches = pitch_range[1] - pitch_range[0]  # 88 pitches in MIDI
     model = MusicRNN(num_pitches=num_pitches, hidden_size=256, num_layers=2, dropout=0.2).to(device)
-    criterion = nn.BCEWithLogitsLoss()  # for 128-way pitch classification
+    criterion = nn.MSELoss()
     optimizer = optim.Adam(model.parameters(), lr=learning_rate)
     
     best_loss = float('inf')
@@ -51,9 +51,10 @@ def main():
             batch_y = batch_y.to(device)   # (B, num_pitches)
 
             optimizer.zero_grad()
-            logits = model(batch_x)        # (B, num_pitches)
+            logits = model(batch_x)
             loss = criterion(logits, batch_y)
             loss.backward()
+            torch.nn.utils.clip_grad_norm_(model.parameters(), max_norm=1.0)
             optimizer.step()
 
             running_loss += loss.item()

@@ -26,7 +26,7 @@ class MusicRNN(nn.Module):
             returns a dict with:
             - 'logits': (batch_size, num_pitches)
             """
-            _, (h_n, _) = self.lstm(x)
-            h_last = h_n[-1]  # (B, hidden_size)
-            logits = self.fc_out(h_last)  # (B, num_pitches)
-            return logits
+            output, _ = self.lstm(x)  # (batch_size, seq_len, hidden_size)
+            last_output = output[:, -1, :]  # Take only the last timestep: (batch_size, hidden_size)
+            logits = self.fc_out(last_output)  # (batch_size, num_pitches)
+            return logits  # Remove the Dict wrapper - just return tensor directly
