@@ -20,7 +20,7 @@ class QLSTM(nn.Module):
         self.n_qubits = n_qubits
         self.n_qlayers = n_qlayers
         self.backend = backend
-
+ 
         self.batch_first = batch_first
         self.return_sequences = return_sequences
         self.return_state = return_state
