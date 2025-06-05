@@ -2,3 +2,5 @@ myenv
 music_rnn.pt
 output.mid 
 local
+quantum_music_rnn.pt
+quantum_output.mid
