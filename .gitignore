@@ -1,6 +1,6 @@
 myenv
 music_rnn.pt
-output.mid 
+regular_output.mid 
 local
 quantum_music_rnn.pt
 quantum_output.mid

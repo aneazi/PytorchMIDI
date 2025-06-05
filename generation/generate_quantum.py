@@ -122,7 +122,7 @@ def notes_to_midi(
 
 def main():
     # 1) Device
-    device = torch.device("mps") if torch.backends.mps.is_available() else torch.device("cpu")
+    device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
     print("Using device:", device)
 
     # 2) Load model

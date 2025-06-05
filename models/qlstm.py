@@ -12,7 +12,7 @@ class QLSTM(nn.Module):
                 batch_first=True,
                 return_sequences=False, 
                 return_state=False,
-                backend="default.qubit"):
+                backend="lightning.qubit"):
         super(QLSTM, self).__init__()
         self.n_inputs = input_size
         self.hidden_size = hidden_size
@@ -20,7 +20,7 @@ class QLSTM(nn.Module):
         self.n_qubits = n_qubits
         self.n_qlayers = n_qlayers
         self.backend = backend
- 
+
         self.batch_first = batch_first
         self.return_sequences = return_sequences
         self.return_state = return_state
@@ -105,20 +105,11 @@ class QLSTM(nn.Module):
             # Match qubit dimension
             y_t = self.clayer_in(v_t)
 
-            # Move to CPU for quantum circuit computation, then back to original device
-            y_t_cpu = y_t.detach().cpu()
-            
-            # LSTM gates using quantum circuits (on CPU)
-            forget_out = self.VQC['forget'](y_t_cpu).to(x.device)  # Move back to device
-            input_out = self.VQC['input'](y_t_cpu).to(x.device)    # Move back to device
-            update_out = self.VQC['update'](y_t_cpu).to(x.device)  # Move back to device
-            output_out = self.VQC['output'](y_t_cpu).to(x.device)  # Move back to device
-            
-            # Apply classical output layer (now on correct device)
-            f_t = torch.sigmoid(self.clayer_out(forget_out))  # forget gate
-            i_t = torch.sigmoid(self.clayer_out(input_out))   # input gate
-            g_t = torch.tanh(self.clayer_out(update_out))     # update gate
-            o_t = torch.sigmoid(self.clayer_out(output_out))  # output gate
+            # LSTM gates using quantum circuits
+            f_t = torch.sigmoid(self.clayer_out(self.VQC['forget'](y_t)))  # forget gate
+            i_t = torch.sigmoid(self.clayer_out(self.VQC['input'](y_t)))   # input gate
+            g_t = torch.tanh(self.clayer_out(self.VQC['update'](y_t)))     # update gate
+            o_t = torch.sigmoid(self.clayer_out(self.VQC['output'](y_t)))  # output gate
 
             # Update cell and hidden states
             c_t = (f_t * c_t) + (i_t * g_t)
