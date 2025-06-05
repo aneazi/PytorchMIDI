@@ -5,8 +5,11 @@ import pandas as pd
 import random
 import pretty_midi
 from pathlib import Path
-from data.preprocess   import midi_to_notes, notes_df_to_array
-from models.music_rnn  import MusicRNN
+import sys
+sys.path.append(str(Path(__file__).parent.parent))
+
+from data.preprocess import midi_to_notes, notes_df_to_array
+from models.music_rnn import MusicRNN
 
 weight_path = "music_rnn.pt"
 midi_dir = "../maestro-v3.0.0"
