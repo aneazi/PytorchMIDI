@@ -14,7 +14,7 @@ def main():
     np.random.seed(seed)
     torch.manual_seed(seed)
     
-    device = torch.device("mps" if torch.backends.mps.is_available() else "cpu")
+    device = torch.device("cuda" if torch.backends.mps.is_available() else "cpu")
     print(f"Using device: {device}")
     """
     - Takes length of sequence and number of files to load.
