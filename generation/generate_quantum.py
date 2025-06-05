@@ -5,18 +5,21 @@ import pandas as pd
 import random
 import pretty_midi
 from pathlib import Path
-from data.preprocess   import midi_to_notes, notes_df_to_array
-from models.music_rnn  import MusicRNN
+import sys
+sys.path.append(str(Path(__file__).parent.parent))
 
-weight_path = "music_rnn.pt"
+from data.preprocess import midi_to_notes, notes_df_to_array
+from models.quantum_music_rnn import QuantumMusicRNN
+
+# Parameters
+weight_path = "quantum_music_rnn.pt"  # Updated to match quantum model weights
 midi_dir = "../maestro-v3.0.0"
-output_midi= "output.mid"
+output_midi = "quantum_output.mid"
 instrument_name = "Acoustic Grand Piano"
 seq_len = 25
-num_predictions = 120
-temperature = 2.0
-sample_rate = 16000
-time_stretch = 1.0
+num_predictions = 240
+temperature = 0.7
+time_stretch = 2.0
 
 def play_music(midi_filename):
     """
@@ -31,16 +34,22 @@ def play_music(midi_filename):
     while pygame.mixer.music.get_busy():
         clock.tick(30) # check if playback has finished
 
-def load_model(device: torch.device) -> MusicRNN:
-    """Instantiate the model, load weights, switch to eval."""
-    model = MusicRNN(input_size=3, hidden_size=128).to(device)
+def load_quantum_model(device: torch.device) -> QuantumMusicRNN:
+    """Load the quantum model with weights."""
+    model = QuantumMusicRNN(
+        input_size=3, 
+        hidden_size=128,
+        n_qubits=4,
+        n_qlayers=1
+    ).to(device)
+    
     state = torch.load(weight_path, map_location=device)
     model.load_state_dict(state)
     model.eval()
     return model
 
 def sample_sequence(
-    model: MusicRNN,
+    model: QuantumMusicRNN,
     seed: np.ndarray,
     num_steps: int,
     temperature: float,
@@ -117,12 +126,15 @@ def main():
     print("Using device:", device)
 
     # 2) Load model
-    model = load_model(device)
+    model = load_quantum_model(device)
     # 3) Pick a MIDI to seed from
-    midis = sorted(Path(midi_dir).rglob("*.mid")) + sorted(Path(midi_dir).rglob("*.midi"))
-    print(len(midis))
-    random_file = random.choice(midis)
-    seed_file = random_file  # or pick another
+    midi_dir = Path("../maestro-v3.0.0")
+    
+    paths = list(midi_dir.rglob('*.mid')) + list(midi_dir.rglob('*.midi'))
+    print(len(paths))
+    random_file = random.choice(paths)
+    ##Testing with first file that 
+    seed_file = paths[0]  # or pick another
     print("Seeding from:", seed_file)
     df_seed = midi_to_notes(str(seed_file))
     arr = notes_df_to_array(df_seed)

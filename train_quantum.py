@@ -5,7 +5,7 @@ import torch.nn as nn
 import torch.optim as optim
 from torch.utils.data import DataLoader
 from data.midi_dataset import MidiSequenceDataset
-from models.music_rnn    import MusicRNN
+from models.quantum_music_rnn import QuantumMusicRNN
 
 
 def main():
@@ -20,8 +20,8 @@ def main():
     - Takes length of sequence and number of files to load.
     """
     seq_len=25
-    max_files=10
-    batch_size=64
+    max_files=1
+    batch_size=32
     learning_rate=0.0001
     num_epochs=50
     """
@@ -36,7 +36,15 @@ def main():
     )
     loader = DataLoader(dataset, batch_size=batch_size, shuffle=True)
     print(f"Loaded {len(dataset)} sequences → {len(loader)} batches per epoch")
-    model = MusicRNN(input_size=3, hidden_size=128).to(device)
+    
+    # Use QuantumMusicRNN instead of regular MusicRNN
+    model = QuantumMusicRNN(
+        input_size=3, 
+        hidden_size=128,
+        n_qubits=4,
+        n_qlayers=1
+    ).to(device)
+    
     criterion_pitch = nn.CrossEntropyLoss()  # for 128-way pitch classification
     criterion_step = nn.MSELoss()            # for scalar step prediction
     criterion_duration = nn.MSELoss()        # for scalar duration prediction
@@ -44,7 +52,7 @@ def main():
     optimizer = optim.Adam(model.parameters(), lr=learning_rate)
     """
     - Training loop.
-    - Saves the best model weights to 'music_rnn.pt'.
+    - Saves the best model weights to 'quantum_music_rnn.pt'.
     """
     for epoch in range(1, num_epochs + 1):
         model.train()
@@ -87,8 +95,9 @@ def main():
               f"pitch={sum_pitch/batches:.4f}  "
               f"step={sum_step/batches:.4f}  "
               f"dur={sum_duration/batches:.4f}")
-    torch.save(model.state_dict(), "music_rnn.pt")
-    print("Model weights saved to music_rnn.pt")
+    
+    torch.save(model.state_dict(), "quantum_music_rnn.pt")
+    print("Quantum model weights saved to quantum_music_rnn.pt")
 
 
 if __name__ == "__main__":

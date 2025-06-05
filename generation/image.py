@@ -26,7 +26,7 @@ def midi_to_pianoroll(midi_file, output_file, fs=100):
     plt.imshow(piano_roll_bool, aspect='auto', origin='lower', cmap='gray_r')
     plt.xlabel('Time (s)'.format(fs))
     plt.ylabel('Note Number')
-    plt.title(f'LSTM Generated Piano Roll')
+    plt.title(f'qLSTM Generated Piano Roll')
     plt.tight_layout()
     
     # Save to PNG
@@ -48,7 +48,7 @@ if __name__ == '__main__':
     parser.add_argument(
         '--fs',
         type=int,
-        default=0.5,
+        default=100,
         help='Sampling frequency for piano roll frames per second (default: 100)'
     )
     args = parser.parse_args()
