@@ -14,13 +14,13 @@ def main():
     np.random.seed(seed)
     torch.manual_seed(seed)
     
-    device = torch.device("cuda" if torch.backends.mps.is_available() else "cpu")
+    device = torch.device("cuda" if torch.cuda.is_available() else "mps")
     print(f"Using device: {device}")
     """
     - Takes length of sequence and number of files to load.
     """
     seq_len=25
-    max_files=10
+    max_files=100
     batch_size=64
     learning_rate=0.005
     num_epochs=50
