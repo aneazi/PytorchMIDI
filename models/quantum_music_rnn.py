@@ -13,6 +13,8 @@ class QuantumMusicRNN(nn.Module):
                  dropout: float = 0.0):
         super().__init__()
         
+        print(f"Initializing QuantumMusicRNN: input_size={input_size}, hidden_size={hidden_size}, n_qubits={n_qubits}")
+        
         # Use QLSTM instead of regular LSTM
         self.qlstm = QLSTM(
             input_size=input_size,

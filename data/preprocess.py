@@ -53,6 +53,7 @@ def load_all_notes(midi_dir: str, max_files: Optional[int]=None) -> np.ndarray:
     Returns:
         np.ndarray: A 2D numpy array of shape (N, 3) where N is the total number of notes across all MIDI files.
     """
+    print(f"Loading MIDI files from directory: {midi_dir}")
     midi_dir = Path(midi_dir)
     paths = list(midi_dir.rglob('*.mid')) + list(midi_dir.rglob('*.midi'))
     if max_files:

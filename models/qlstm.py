@@ -12,8 +12,9 @@ class QLSTM(nn.Module):
                 batch_first=True,
                 return_sequences=False, 
                 return_state=False,
-                backend="lightning.qubit"):
+                backend="lightning.gpu"):
         super(QLSTM, self).__init__()
+        print(f"Initializing QLSTM: input_size={input_size}, hidden_size={hidden_size}, n_qubits={n_qubits}, backend={backend}")
         self.n_inputs = input_size
         self.hidden_size = hidden_size
         self.concat_size = self.n_inputs + self.hidden_size
@@ -68,6 +69,7 @@ class QLSTM(nn.Module):
         print(f"QLSTM weight_shapes = (n_qlayers, n_qubits) = ({n_qlayers}, {n_qubits})")
 
         # Classical layers
+        print("Creating classical layers and VQC components...")
         self.clayer_in = torch.nn.Linear(self.concat_size, n_qubits)
         self.VQC = {
             'forget': qml.qnn.TorchLayer(self.qlayer_forget, weight_shapes),

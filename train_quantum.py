@@ -9,6 +9,7 @@ from models.quantum_music_rnn import QuantumMusicRNN
 import time
 
 def main():
+    print("At main...")
     seed=42
     random.seed(seed)
     np.random.seed(seed)
@@ -38,6 +39,7 @@ def main():
     print(f"Loaded {len(dataset)} sequences → {len(loader)} batches per epoch")
     
     # Use QuantumMusicRNN instead of regular MusicRNN
+    print("Creating QuantumMusicRNN model...")
     model = QuantumMusicRNN(
         input_size=3, 
         hidden_size=128,
@@ -50,6 +52,7 @@ def main():
     criterion_duration = nn.MSELoss()        # for scalar duration prediction
 
     optimizer = optim.Adam(model.parameters(), lr=learning_rate)
+    print(f"Starting training for {num_epochs} epochs...")
     """
     - Training loop.
     - Saves the best model weights to 'quantum_music_rnn.pt'.

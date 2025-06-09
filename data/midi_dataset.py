@@ -21,6 +21,7 @@ class MidiSequenceDataset(Dataset):
             seq_len (int): Length of each sequence to be used for training.
             max_files (Optional[int], optional): Number of files to train on. Defaults to None.
         """
+        print(f"Initializing MidiSequenceDataset with seq_len={seq_len}, max_files={max_files}")
         notes = load_all_notes(midi_dir, max_files=max_files)
         total_notes, features = notes.shape
         self.seq_len=seq_len
