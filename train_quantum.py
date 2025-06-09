@@ -6,7 +6,7 @@ import torch.optim as optim
 from torch.utils.data import DataLoader
 from data.midi_dataset import MidiSequenceDataset
 from models.quantum_music_rnn import QuantumMusicRNN
-
+import time
 
 def main():
     seed=42
@@ -90,7 +90,8 @@ def main():
             sum_duration += loss_d.item()
         # report averages
         batches = len(loader)
-        print(f"Epoch {epoch:2d}/{num_epochs}  "
+        print(f"TIME: {time.strftime('%H:%M:%S')} "
+              f"Epoch {epoch:2d}/{num_epochs}  "
               f"loss={sum_loss/batches:.4f}  "
               f"pitch={sum_pitch/batches:.4f}  "
               f"step={sum_step/batches:.4f}  "
