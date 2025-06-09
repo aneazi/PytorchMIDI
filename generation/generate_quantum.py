@@ -14,7 +14,7 @@ from models.quantum_music_rnn import QuantumMusicRNN
 # Parameters
 weight_path = "quantum_music_rnn.pt"  # Updated to match quantum model weights
 midi_dir = "../maestro-v3.0.0"
-output_midi = "quantum_output.mid"
+output_midi = "outputs/quantum_output.mid"
 instrument_name = "Acoustic Grand Piano"
 seq_len = 25
 num_predictions = 120
