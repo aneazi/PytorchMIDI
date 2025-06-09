@@ -18,7 +18,7 @@ output_midi = "regular_output.mid"
 instrument_name = "Acoustic Grand Piano"
 seq_len = 25
 num_predictions = 120
-temperature = 2.0
+temperature = 1.0
 time_stretch = 1.0
 
 def play_music(midi_filename):

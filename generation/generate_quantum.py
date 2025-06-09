@@ -17,9 +17,9 @@ midi_dir = "../maestro-v3.0.0"
 output_midi = "quantum_output.mid"
 instrument_name = "Acoustic Grand Piano"
 seq_len = 25
-num_predictions = 240
-temperature = 0.7
-time_stretch = 2.0
+num_predictions = 120
+temperature = 1.0
+time_stretch = 1.0
 
 def play_music(midi_filename):
     """
