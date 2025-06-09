@@ -48,7 +48,7 @@ if __name__ == '__main__':
     parser.add_argument(
         '--fs',
         type=int,
-        default=0.5,
+        default=100,
         help='Sampling frequency for piano roll frames per second (default: 100)'
     )
     args = parser.parse_args()
