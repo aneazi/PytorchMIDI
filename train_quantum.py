@@ -20,10 +20,10 @@ def main():
     """
     - Takes length of sequence and number of files to load.
     """
-    seq_len=8
-    max_files=1
+    seq_len=16
+    max_files=5
     batch_size=32
-    learning_rate=0.0001
+    learning_rate=0.001
     num_epochs=50
     """
     - Loads MIDI dataset from MAESTRO v3.0.0.

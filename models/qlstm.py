@@ -83,8 +83,6 @@ class QLSTM(nn.Module):
         """
         x.shape is (batch_size, seq_length, feature_size)
         """
-        time_total_start = time.time()
-        
         if self.batch_first:
             batch_size, seq_length, features_size = x.size()
         else:
@@ -109,15 +107,12 @@ class QLSTM(nn.Module):
             y_t = self.clayer_in(v_t)
             
             # Time quantum circuits
-            time_quantum_start = time.time()
             f_out = self.VQC['forget'](y_t)
             i_out = self.VQC['input'](y_t)
             g_out = self.VQC['candidate'](y_t)
             o_out = self.VQC['output'](y_t)
-            time_quantum_total += time.time() - time_quantum_start
             
             # Time classical operations
-            time_classical_start = time.time()
             f_t = torch.sigmoid(self.clayer_out(f_out))  # forget gate
             i_t = torch.sigmoid(self.clayer_out(i_out))   # input gate
             g_t = torch.tanh(self.clayer_out(g_out))     # update gate
@@ -128,15 +123,7 @@ class QLSTM(nn.Module):
             h_t = o_t * torch.tanh(c_t)
 
             hidden_seq.append(h_t.unsqueeze(0))
-            time_classical_total += time.time() - time_classical_start
-        
         hidden_seq = torch.cat(hidden_seq, dim=0)
         hidden_seq = hidden_seq.transpose(0, 1).contiguous()
-        
-        time_total_end = time.time()
-        # Uncomment for performance debugging
-        # print(f"Total forward pass: {time_total_end - time_total_start:.4f}s")
-        # print(f"  - Quantum circuits: {time_quantum_total:.4f}s ({time_quantum_total/(time_total_end - time_total_start)*100:.1f}%)")
-        # print(f"  - Classical ops: {time_classical_total:.4f}s ({time_classical_total/(time_total_end - time_total_start)*100:.1f}%)")
         
         return hidden_seq, (h_t, c_t)
