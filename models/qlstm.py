@@ -12,7 +12,7 @@ class QLSTM(nn.Module):
                 batch_first=True,
                 return_sequences=False, 
                 return_state=False,
-                backend="lightning.gpu"):
+                backend="default.qubit"):
         super(QLSTM, self).__init__()
         print(f"Initializing QLSTM: input_size={input_size}, hidden_size={hidden_size}, n_qubits={n_qubits}, backend={backend}")
         self.n_inputs = input_size
@@ -83,6 +83,7 @@ class QLSTM(nn.Module):
         """
         x.shape is (batch_size, seq_length, feature_size)
         """
+        print(f"Input tensor device: {x.device}")
         if self.batch_first:
             batch_size, seq_length, features_size = x.size()
         else:
@@ -106,13 +107,14 @@ class QLSTM(nn.Module):
 
             # Match qubit dimension
             y_t = self.clayer_in(v_t)
-
+            print(f"y_t device before quantum: {y_t.device}")
             # LSTM gates using quantum circuits
             f_t = torch.sigmoid(self.clayer_out(self.VQC['forget'](y_t)))  # forget gate
             i_t = torch.sigmoid(self.clayer_out(self.VQC['input'](y_t)))   # input gate
             g_t = torch.tanh(self.clayer_out(self.VQC['update'](y_t)))     # update gate
             o_t = torch.sigmoid(self.clayer_out(self.VQC['output'](y_t)))  # output gate
-
+            print(f"Quantum result device: {f_t.device}")
+            print(f"Quantum result type: {type(f_t)}")
             # Update cell and hidden states
             c_t = (f_t * c_t) + (i_t * g_t)
             h_t = o_t * torch.tanh(c_t)
