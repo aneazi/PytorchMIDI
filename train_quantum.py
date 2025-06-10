@@ -20,7 +20,7 @@ def main():
     """
     - Takes length of sequence and number of files to load.
     """
-    seq_len=25
+    seq_len=8
     max_files=1
     batch_size=32
     learning_rate=0.0001
@@ -46,7 +46,17 @@ def main():
         n_qubits=4,
         n_qlayers=1
     ).to(device)
-    
+    print("\nModel parameters:")
+    for name, param in model.named_parameters():
+        print(f"{name}: {param.shape}")
+
+    # Check if quantum parameters are registered
+    quantum_params = [name for name, _ in model.named_parameters() if 'VQC' in name]
+    print(f"\nQuantum parameters found: {len(quantum_params)}")
+    if not quantum_params:
+        print("ERROR: No quantum parameters found! This confirms the nn.ModuleDict issue.")
+    else:
+        print("Quantum parameters:", quantum_params)
     criterion_pitch = nn.CrossEntropyLoss()  # for 128-way pitch classification
     criterion_step = nn.MSELoss()            # for scalar step prediction
     criterion_duration = nn.MSELoss()        # for scalar duration prediction
@@ -83,7 +93,6 @@ def main():
             loss_p = criterion_pitch(pitch_logits, true_pitch)
             loss_s = criterion_step(step_pred,    true_step)
             loss_d = criterion_duration(dur_pred, true_duration)
-            print("Computing losses...")
             # weighted sum
             loss = 0.05 * loss_p + 1.0 * loss_s + 1.0 * loss_d
             loss.backward()
@@ -92,7 +101,6 @@ def main():
             sum_pitch += loss_p.item()
             sum_step += loss_s.item()
             sum_duration += loss_d.item()
-            print("Done with batch")
         epoch_time = time.time() - epoch_start_time
         # report averages
         batches = len(loader)
