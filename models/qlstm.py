@@ -37,32 +37,11 @@ class QLSTM(nn.Module):
         self.dev_update = qml.device(self.backend, wires=self.wires_update)
         self.dev_output = qml.device(self.backend, wires=self.wires_output)
 
-        # Define quantum circuits for each LSTM gate
-        def _circuit_forget(inputs, weights):
-            qml.templates.AngleEmbedding(inputs, wires=self.wires_forget)
-            qml.templates.BasicEntanglerLayers(weights, wires=self.wires_forget)
-            return [qml.expval(qml.PauliZ(wires=w)) for w in self.wires_forget]
-        
-        def _circuit_input(inputs, weights):
-            qml.templates.AngleEmbedding(inputs, wires=self.wires_input)
-            qml.templates.BasicEntanglerLayers(weights, wires=self.wires_input)
-            return [qml.expval(qml.PauliZ(wires=w)) for w in self.wires_input]
-        
-        def _circuit_update(inputs, weights):
-            qml.templates.AngleEmbedding(inputs, wires=self.wires_update)
-            qml.templates.BasicEntanglerLayers(weights, wires=self.wires_update)
-            return [qml.expval(qml.PauliZ(wires=w)) for w in self.wires_update]
-        
-        def _circuit_output(inputs, weights):
-            qml.templates.AngleEmbedding(inputs, wires=self.wires_output)
-            qml.templates.BasicEntanglerLayers(weights, wires=self.wires_output)
-            return [qml.expval(qml.PauliZ(wires=w)) for w in self.wires_output]
-
-        # Create QNodes
-        self.qlayer_forget = qml.QNode(_circuit_forget, self.dev_forget, interface="torch")
-        self.qlayer_input = qml.QNode(_circuit_input, self.dev_input, interface="torch")
-        self.qlayer_update = qml.QNode(_circuit_update, self.dev_update, interface="torch")
-        self.qlayer_output = qml.QNode(_circuit_output, self.dev_output, interface="torch")
+        # Create QNodes with pre-defined circuits (defined once)
+        self.qlayer_forget = qml.QNode(self._circuit_forget, self.dev_forget, interface="torch")
+        self.qlayer_input = qml.QNode(self._circuit_input, self.dev_input, interface="torch")
+        self.qlayer_update = qml.QNode(self._circuit_update, self.dev_update, interface="torch")
+        self.qlayer_output = qml.QNode(self._circuit_output, self.dev_output, interface="torch")
 
         # Weight shapes for quantum layers
         weight_shapes = {"weights": (n_qlayers, n_qubits)}
@@ -78,6 +57,27 @@ class QLSTM(nn.Module):
             'output': qml.qnn.TorchLayer(self.qlayer_output, weight_shapes)
         }
         self.clayer_out = torch.nn.Linear(self.n_qubits, self.hidden_size)
+
+    # Define circuits as class methods (created once, not per forward pass)
+    def _circuit_forget(self, inputs, weights):
+        qml.templates.AngleEmbedding(inputs, wires=self.wires_forget)
+        qml.templates.BasicEntanglerLayers(weights, wires=self.wires_forget)
+        return [qml.expval(qml.PauliZ(wires=w)) for w in self.wires_forget]
+    
+    def _circuit_input(self, inputs, weights):
+        qml.templates.AngleEmbedding(inputs, wires=self.wires_input)
+        qml.templates.BasicEntanglerLayers(weights, wires=self.wires_input)
+        return [qml.expval(qml.PauliZ(wires=w)) for w in self.wires_input]
+    
+    def _circuit_update(self, inputs, weights):
+        qml.templates.AngleEmbedding(inputs, wires=self.wires_update)
+        qml.templates.BasicEntanglerLayers(weights, wires=self.wires_update)
+        return [qml.expval(qml.PauliZ(wires=w)) for w in self.wires_update]
+    
+    def _circuit_output(self, inputs, weights):
+        qml.templates.AngleEmbedding(inputs, wires=self.wires_output)
+        qml.templates.BasicEntanglerLayers(weights, wires=self.wires_output)
+        return [qml.expval(qml.PauliZ(wires=w)) for w in self.wires_output]
 
     def forward(self, x, init_states=None):
         """
@@ -107,14 +107,13 @@ class QLSTM(nn.Module):
 
             # Match qubit dimension
             y_t = self.clayer_in(v_t)
-            print(f"y_t device before quantum: {y_t.device}")
-            # LSTM gates using quantum circuits
+            
+            # LSTM gates using quantum circuits (only parameters passed, circuits pre-defined)
             f_t = torch.sigmoid(self.clayer_out(self.VQC['forget'](y_t)))  # forget gate
             i_t = torch.sigmoid(self.clayer_out(self.VQC['input'](y_t)))   # input gate
             g_t = torch.tanh(self.clayer_out(self.VQC['update'](y_t)))     # update gate
             o_t = torch.sigmoid(self.clayer_out(self.VQC['output'](y_t)))  # output gate
-            print(f"Quantum result device: {f_t.device}")
-            print(f"Quantum result type: {type(f_t)}")
+            
             # Update cell and hidden states
             c_t = (f_t * c_t) + (i_t * g_t)
             h_t = o_t * torch.tanh(c_t)
