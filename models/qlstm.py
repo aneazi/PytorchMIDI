@@ -1,7 +1,7 @@
 import torch
 import torch.nn as nn
 import pennylane as qml
-
+import time
 
 class QLSTM(nn.Module):
     def __init__(self, 
@@ -97,7 +97,7 @@ class QLSTM(nn.Module):
             h_t, c_t = init_states
             h_t = h_t[0]
             c_t = c_t[0]
-
+        time_start = time.time()
         for t in range(seq_length):
             # Get features from the t-th element in seq
             x_t = x[:, t, :]
@@ -119,7 +119,8 @@ class QLSTM(nn.Module):
             h_t = o_t * torch.tanh(c_t)
 
             hidden_seq.append(h_t.unsqueeze(0))
-        
+        time_end = time.time()
+        print(f"Forward pass time: {time_end - time_start:.4f} seconds")
         hidden_seq = torch.cat(hidden_seq, dim=0)
         hidden_seq = hidden_seq.transpose(0, 1).contiguous()
         

@@ -58,6 +58,7 @@ def main():
     - Saves the best model weights to 'quantum_music_rnn.pt'.
     """
     for epoch in range(1, num_epochs + 1):
+        epoch_start_time = time.time()
         model.train()
         sum_loss = 0.0
         sum_pitch = 0.0
@@ -92,10 +93,11 @@ def main():
             sum_step += loss_s.item()
             sum_duration += loss_d.item()
             print("Done with batch")
+        epoch_time = time.time() - epoch_start_time
         # report averages
         batches = len(loader)
         print(f"TIME: {time.strftime('%H:%M:%S')} "
-              f"Epoch {epoch:2d}/{num_epochs}  "
+              f"Epoch {epoch:2d}/{num_epochs} took {epoch_time:.2f}s "
               f"loss={sum_loss/batches:.4f}  "
               f"pitch={sum_pitch/batches:.4f}  "
               f"step={sum_step/batches:.4f}  "
