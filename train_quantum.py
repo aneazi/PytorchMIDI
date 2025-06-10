@@ -21,7 +21,7 @@ def main():
     - Takes length of sequence and number of files to load.
     """
     seq_len=25
-    max_files=10
+    max_files=1
     batch_size=32
     learning_rate=0.0001
     num_epochs=50
@@ -63,7 +63,7 @@ def main():
         sum_pitch = 0.0
         sum_step = 0.0
         sum_duration = 0.0
-
+        
         for batch_seq, batch_nxt in loader:
             batch_seq = batch_seq.to(device)   # (B, SEQ_LEN, 3)
             batch_nxt = batch_nxt.to(device)   # (B, 3)
@@ -77,12 +77,12 @@ def main():
             true_pitch = batch_nxt[:, 0].long()       # (B,)
             true_step = batch_nxt[:, 1]               # (B,)
             true_duration = batch_nxt[:, 2]           # (B,)
-
+            
             # compute individual losses
             loss_p = criterion_pitch(pitch_logits, true_pitch)
             loss_s = criterion_step(step_pred,    true_step)
             loss_d = criterion_duration(dur_pred, true_duration)
-
+            print("Computing losses...")
             # weighted sum
             loss = 0.05 * loss_p + 1.0 * loss_s + 1.0 * loss_d
             loss.backward()
@@ -91,6 +91,7 @@ def main():
             sum_pitch += loss_p.item()
             sum_step += loss_s.item()
             sum_duration += loss_d.item()
+            print("Done with batch")
         # report averages
         batches = len(loader)
         print(f"TIME: {time.strftime('%H:%M:%S')} "
