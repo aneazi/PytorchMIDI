@@ -12,11 +12,11 @@ from data.preprocess import midi_to_notes, notes_df_to_array
 from models.music_rnn import MusicRNN
 
 # Parameters
-weight_path = "music_rnn.pt"  # Regular model weights
+weight_path = "outputs/music_rnn_300.pt"  # Regular model weights
 midi_dir = "../maestro-v3.0.0"
-output_midi = "outputs/regular_output.mid"
+output_midi = "outputs/regular_output_300.mid"
 instrument_name = "Acoustic Grand Piano"
-seq_len = 25
+seq_len = 32
 num_predictions = 120
 temperature = 1.0
 time_stretch = 1.0

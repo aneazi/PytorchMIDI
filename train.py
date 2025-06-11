@@ -19,10 +19,10 @@ def main():
     """
     - Takes length of sequence and number of files to load.
     """
-    seq_len=25
-    max_files=100
+    seq_len=32
+    max_files=300
     batch_size=64
-    learning_rate=0.0001
+    learning_rate=0.0005
     num_epochs=50
     """
     - Loads MIDI dataset from MAESTRO v3.0.0.
@@ -47,6 +47,7 @@ def main():
     - Saves the best model weights to 'music_rnn.pt'.
     """
     for epoch in range(1, num_epochs + 1):
+        start_time=time.time()
         model.train()
         sum_loss = 0.0
         sum_pitch = 0.0
@@ -81,14 +82,15 @@ def main():
             sum_step += loss_s.item()
             sum_duration += loss_d.item()
         # report averages
+        end_time=time.time()-start_time
         batches = len(loader)
         print(f"TIME: {time.strftime('%H:%M:%S')} "
-              f"Epoch {epoch:2d}/{num_epochs}  "
+              f"Epoch {epoch:2d}/{num_epochs} took {end_time:.2f}s "
               f"loss={sum_loss/batches:.4f}  "
               f"pitch={sum_pitch/batches:.4f}  "
               f"step={sum_step/batches:.4f}  "
               f"dur={sum_duration/batches:.4f}")
-    torch.save(model.state_dict(), "music_rnn.pt")
+    torch.save(model.state_dict(), "outputs/music_rnn_300.pt")
     print("Model weights saved to music_rnn.pt")
 
 
