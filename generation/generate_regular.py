@@ -1,6 +1,8 @@
 import torch
 import numpy as np
 import pygame
+import yaml
+from argparse import Namespace
 import pandas as pd
 import random
 import pretty_midi
@@ -11,15 +13,18 @@ sys.path.append(str(Path(__file__).parent.parent))
 from data.preprocess import midi_to_notes, notes_df_to_array
 from models.music_rnn import MusicRNN
 
+cfg_dict = yaml.safe_load(open("config.yml", "r"))
+cfg = Namespace(**cfg_dict)
+
 # Parameters
-weight_path = "outputs/music_rnn_300.pt"  # Regular model weights
-midi_dir = Path("../maestro-v3.0.0")
-output_midi = "outputs/regular_output_300.mid"
-instrument_name = "Acoustic Grand Piano"
-seq_len = 256
-num_predictions = 120
-temperature = 1.0
-time_stretch = 1.0
+weight_path = cfg.CLASSICAL_MODEL_PATH  # Updated to match classical model weights
+midi_dir = Path(cfg.CLASSICAL_SEED_DIR)
+output_midi = cfg.CLASSICAL_OUTPUT_PATH
+instrument_name = cfg.INSTRUMENT_NAME
+seq_len = cfg.SEQ_LEN
+num_predictions = cfg.NUM_PREDICTIONS
+temperature = cfg.TEMPERATURE
+time_stretch = cfg.TIME_STRETCH
 
 def play_music(midi_filename):
     """

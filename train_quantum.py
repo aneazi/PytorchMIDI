@@ -1,4 +1,6 @@
 import random
+import yaml
+from argparse import Namespace
 import numpy as np
 import torch
 import torch.nn as nn
@@ -9,6 +11,8 @@ from models.quantum_music_rnn import QuantumMusicRNN
 import time
 
 def main():
+    cfg_dict = yaml.safe_load(open("config.yml", "r"))
+    cfg = Namespace(**cfg_dict)
     print("At main...")
     seed=42
     random.seed(seed)
@@ -20,18 +24,19 @@ def main():
     """
     - Takes length of sequence and number of files to load.
     """
-    seq_len=32
-    max_files=1
-    batch_size=32
-    learning_rate=0.0005
-    num_epochs=50
+    seq_len=cfg.SEQ_LEN
+    max_files=cfg.MAX_FILES
+    batch_size=cfg.BATCH_SIZE
+    learning_rate=cfg.LEARNING_RATE
+    num_epochs=cfg.EPOCHS
+    model_path=cfg.QUANTUM_MODEL_PATH
     """
     - Loads MIDI dataset from MAESTRO v3.0.0.
     - Each sequence is of length 'seq_len'.
     - Contains 4 features: pitch, step, duration, velocity.
     """
     dataset = MidiSequenceDataset(
-        midi_dir = "../maestro-v3.0.0",
+        midi_dir = cfg.DATASET,
         seq_len = seq_len,
         max_files = max_files
     )
@@ -109,8 +114,8 @@ def main():
               f"dur={sum_duration/batches:.4f} "
               f"vel={sum_velocity/batches:.4f}")
     
-    torch.save(model.state_dict(), "quantum_music_rnn.pt")
-    print("Quantum model weights saved to quantum_music_rnn.pt")
+    torch.save(model.state_dict(), model_path)
+    print(f"Quantum model weights saved to {model_path}")
 
 
 if __name__ == "__main__":
