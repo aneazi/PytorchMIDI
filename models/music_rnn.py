@@ -5,7 +5,7 @@ from typing import Dict, Any
 class MusicRNN(nn.Module):
     def __init__ (
         self,
-        input_size: int=3,
+        input_size: int=4,
         hidden_size: int = 128,
         num_layers: int = 1,
         dropout: int = 0.0,
@@ -21,6 +21,7 @@ class MusicRNN(nn.Module):
         self.fc_pitch = nn.Linear(hidden_size, 128)  # 128 MIDI classes
         self.fc_step = nn.Linear(hidden_size, 1)    # scalar time-gap
         self.fc_duration = nn.Linear(hidden_size, 1)    # scalar length
+        self.fc_velocity = nn.Linear(hidden_size, 1)
 
     def forward(self, x: torch.Tensor) -> Dict[str, torch.Tensor]:
             """
@@ -36,4 +37,5 @@ class MusicRNN(nn.Module):
                 'pitch': self.fc_pitch(features),
                 'step': self.fc_step(features),
                 'duration': self.fc_duration(features),
+                'velocity': self.fc_velocity(features),
             }

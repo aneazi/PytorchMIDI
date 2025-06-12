@@ -16,7 +16,7 @@ weight_path = "outputs/music_rnn_300.pt"  # Regular model weights
 midi_dir = Path("../maestro-v3.0.0")
 output_midi = "outputs/regular_output_300.mid"
 instrument_name = "Acoustic Grand Piano"
-seq_len = 32
+seq_len = 256
 num_predictions = 120
 temperature = 1.0
 time_stretch = 1.0
@@ -37,7 +37,7 @@ def play_music(midi_filename):
 def load_model(device: torch.device) -> MusicRNN:
     """Load the regular model with weights."""
     model = MusicRNN(
-        input_size=3, 
+        input_size=4, 
         hidden_size=128
     ).to(device)
     
@@ -57,7 +57,7 @@ def sample_sequence(
     Autoregressively sample next notes.
     seed: array shape (SEQ_LEN, 3) of [pitch, step, duration].
     returns a DataFrame with columns
-      ['pitch','step','duration','start','end'] of length num_steps.
+      ['pitch','step','duration','start','end', 'velocity'] of length num_steps.
     """
     gen = []
     prev_start = 0.0
@@ -72,34 +72,36 @@ def sample_sequence(
         logits = out['pitch'] / temperature           # (1,128)
         probs = torch.softmax(logits, dim=-1)        # (1,128)
         pitch = torch.multinomial(probs, num_samples=1).item()
+        
         # step & duration: direct scalars
         step = out['step'].item()
         duration = out['duration'].item()
+        
         # clamp to non-negative
         step = max(step, 0.0) * time_stretch
         duration = max(duration, 0.0) * time_stretch
+        velocity = out['velocity'].item()
 
         start = prev_start + step
         end = start + duration
-        gen.append((pitch, step, duration, start, end))
+        gen.append((pitch, step, duration, start, end, velocity))
         prev_start = start
 
         # shift window, append new note
-        next_feat = np.array([pitch, step, duration], dtype=np.float32)
+        next_feat = np.array([pitch, step, duration, velocity], dtype=np.float32)
         seq = np.vstack([seq[1:], next_feat])
 
     return pd.DataFrame(
-        gen, columns=['pitch','step','duration','start','end']
+        gen, columns=['pitch','step','duration','start','end', 'velocity']
     )
 
 def notes_to_midi(
     notes_df: pd.DataFrame,
     out_path: str,
-    instrument_name: str,
-    velocity: int = 100
+    instrument_name: str
 ) -> pretty_midi.PrettyMIDI:
     """
-    Turn a DataFrame of (pitch,step,duration,start,end) into a .mid file.
+    Turn a DataFrame of (pitch,step,duration,start,end,velocity) into a .mid file.
     """
     pm = pretty_midi.PrettyMIDI()
     inst = pretty_midi.Instrument(
@@ -107,7 +109,7 @@ def notes_to_midi(
     )
     for _, row in notes_df.iterrows():
         note = pretty_midi.Note(
-            velocity=velocity,
+            velocity=int(row['velocity']),
             pitch=int(row['pitch']),
             start=float(row['start']),
             end=float(row['end'])

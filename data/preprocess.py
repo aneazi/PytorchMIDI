@@ -10,7 +10,7 @@ from typing import List, Optional, Tuple, Union
 
 def midi_to_notes(midi_file: str) -> pd.DataFrame:
     """Parses MIDI file and returns a dataframe with columns:
-    pitch | start | end | step | duration"""
+    pitch | start | end | step | duration | velocity"""
     pm = pretty_midi.PrettyMIDI(midi_file)
     instrument = pm.instruments[0]
     notes = collections.defaultdict(list)
@@ -22,18 +22,20 @@ def midi_to_notes(midi_file: str) -> pd.DataFrame:
     for note in sorted_notes:
         start = note.start
         end = note.end
+        velocity = note.velocity
         notes['pitch'].append(note.pitch)
         notes['start'].append(start)
         notes['end'].append(end)
         notes['step'].append(start - prev_start)
         notes['duration'].append(end - start)
+        notes['velocity'].append(velocity)
         prev_start = start
 
     return pd.DataFrame({name: np.array(value) for name, value in notes.items()})
 
 def notes_df_to_array(
     notes_df: pd.DataFrame,
-    feature_cols: List[str] = ['pitch','step','duration']
+    feature_cols: List[str] = ['pitch','step','duration', 'velocity']
 ) -> np.ndarray:
     """
     Convert the notes DataFrame into a (N, len(feature_cols)) float32 array.

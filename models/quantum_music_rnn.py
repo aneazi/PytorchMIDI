@@ -6,7 +6,7 @@ from .qlstm import QLSTM
 
 class QuantumMusicRNN(nn.Module):
     def __init__(self, 
-                 input_size: int = 3,
+                 input_size: int = 4,
                  hidden_size: int = 128,
                  n_qubits: int = 4,
                  n_qlayers: int = 1,
@@ -29,6 +29,7 @@ class QuantumMusicRNN(nn.Module):
         self.fc_pitch = nn.Linear(hidden_size, 128)     # 128 MIDI pitch classes
         self.fc_step = nn.Linear(hidden_size, 1)        # scalar time-gap
         self.fc_duration = nn.Linear(hidden_size, 1)    # scalar duration
+        self.fc_velocity = nn.Linear(hidden_size, 1)    # scalar duration
         
         # Optional dropout
         self.dropout = nn.Dropout(dropout) if dropout > 0 else None
@@ -40,6 +41,7 @@ class QuantumMusicRNN(nn.Module):
           'pitch':    (batch_size, 128)  — raw logits
           'step':     (batch_size, 1)    — real prediction  
           'duration': (batch_size, 1)    — real prediction
+          'velocity': (batch_size, 1)  — real prediction
         """
         # Pass through QLSTM
         lstm_out, (h_n, c_n) = self.qlstm(x)
@@ -55,4 +57,5 @@ class QuantumMusicRNN(nn.Module):
             'pitch': self.fc_pitch(features),
             'step': self.fc_step(features),
             'duration': self.fc_duration(features),
+            'velocity': self.fc_velocity(features),
         }

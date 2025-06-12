@@ -19,7 +19,7 @@ instrument_name = "Acoustic Grand Piano"
 seq_len = 32
 num_predictions = 120
 temperature = 1.0
-time_stretch = 1.0
+time_stretch = 1.5
 
 def play_music(midi_filename):
     """
@@ -37,7 +37,7 @@ def play_music(midi_filename):
 def load_quantum_model(device: torch.device) -> QuantumMusicRNN:
     """Load the quantum model with weights."""
     model = QuantumMusicRNN(
-        input_size=3, 
+        input_size=4, 
         hidden_size=128,
         n_qubits=8,
         n_qlayers=1
@@ -59,7 +59,7 @@ def sample_sequence(
     Autoregressively sample next notes.
     seed: array shape (SEQ_LEN, 3) of [pitch, step, duration].
     returns a DataFrame with columns
-      ['pitch','step','duration','start','end'] of length num_steps.
+      ['pitch','step','duration','start','end','velocity'] of length num_steps.
     """
     gen = []
     prev_start = 0.0
@@ -77,28 +77,28 @@ def sample_sequence(
         # step & duration: direct scalars
         step = out['step'].item()
         duration = out['duration'].item()
+        velocity = out['velocity'].item()
         # clamp to non-negative
         step = max(step, 0.0) * time_stretch
         duration = max(duration, 0.0) * time_stretch
 
         start = prev_start + step
         end = start + duration
-        gen.append((pitch, step, duration, start, end))
+        gen.append((pitch, step, duration, start, end, velocity))
         prev_start = start
 
         # shift window, append new note
-        next_feat = np.array([pitch, step, duration], dtype=np.float32)
+        next_feat = np.array([pitch, step, duration, velocity], dtype=np.float32)
         seq = np.vstack([seq[1:], next_feat])
 
     return pd.DataFrame(
-        gen, columns=['pitch','step','duration','start','end']
+        gen, columns=['pitch','step','duration','start','end', 'velocity']
     )
 
 def notes_to_midi(
     notes_df: pd.DataFrame,
     out_path: str,
     instrument_name: str,
-    velocity: int = 100
 ) -> pretty_midi.PrettyMIDI:
     """
     Turn a DataFrame of (pitch,step,duration,start,end) into a .mid file.
@@ -109,7 +109,7 @@ def notes_to_midi(
     )
     for _, row in notes_df.iterrows():
         note = pretty_midi.Note(
-            velocity=velocity,
+            velocity=int(row['velocity']),
             pitch=int(row['pitch']),
             start=float(row['start']),
             end=float(row['end'])
