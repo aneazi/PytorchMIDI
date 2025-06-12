@@ -39,7 +39,7 @@ def notes_df_to_array(
 ) -> np.ndarray:
     """
     Convert the notes DataFrame into a (N, len(feature_cols)) float32 array.
-    By default returns (N,3) with [pitch, step, duration].
+    By default returns (N,4) with [pitch, step, duration, velocity].
     """
     return notes_df[feature_cols].to_numpy(dtype=np.float32)
 
@@ -47,13 +47,13 @@ def notes_df_to_array(
 def load_all_notes(midi_dir: str, max_files: Optional[int]=None) -> np.ndarray:
     """
     - Load all MIDIs from a directory and convert them to a numpy array.
-    - Each MIDI is converted to a (N, 3) array where N is the number of notes. 
-    - And the columns are: [pitch, step, duration].
+    - Each MIDI is converted to a (N, 4) array where N is the number of notes. 
+    - And the columns are: [pitch, step, duration, velocity].
     Args:
         midi_dir (str): Path to the directory containing MIDI files.
         max_files (Optional[int], optional): Number of files to train on. Defaults to None.
     Returns:
-        np.ndarray: A 2D numpy array of shape (N, 3) where N is the total number of notes across all MIDI files.
+        np.ndarray: A 2D numpy array of shape (N, 4) where N is the total number of notes across all MIDI files.
     """
     print(f"Loading MIDI files from directory: {midi_dir}")
     midi_dir = Path(midi_dir)

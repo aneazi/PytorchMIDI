@@ -30,6 +30,7 @@ class MusicRNN(nn.Module):
               'pitch':    (batch_size, 128)  — raw logits
               'step':     (batch_size,   1)  — real prediction
               'duration': (batch_size,   1)  — real prediction
+              'velocity': (batch_size, 1)  — real prediction
             """
             _, (h_n, _) = self.lstm(x)  
             features = h_n[-1]

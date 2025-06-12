@@ -69,8 +69,8 @@ def main():
         sum_velocity = 0.0
         
         for batch_seq, batch_nxt in loader:
-            batch_seq = batch_seq.to(device)   # (B, SEQ_LEN, 3)
-            batch_nxt = batch_nxt.to(device)   # (B, 3)
+            batch_seq = batch_seq.to(device)   # (B, SEQ_LEN, 4)
+            batch_nxt = batch_nxt.to(device)   # (B, 4)
             optimizer.zero_grad()
             preds = model(batch_seq)
             # unpack predictions & targets

@@ -55,7 +55,7 @@ def sample_sequence(
 ) -> pd.DataFrame:
     """
     Autoregressively sample next notes.
-    seed: array shape (SEQ_LEN, 3) of [pitch, step, duration].
+    seed: array shape (SEQ_LEN, 4) of [pitch, step, duration, velocity].
     returns a DataFrame with columns
       ['pitch','step','duration','start','end', 'velocity'] of length num_steps.
     """
@@ -64,7 +64,7 @@ def sample_sequence(
     seq = seed.copy()
 
     for _ in range(num_steps):
-        # to tensor (1, SEQ_LEN, 3)
+        # to tensor (1, SEQ_LEN, 4)
         x = torch.from_numpy(seq).float().unsqueeze(0).to(device)
         with torch.no_grad():
             out = model(x)
