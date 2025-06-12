@@ -12,7 +12,7 @@ class QLSTM(nn.Module):
                 batch_first=True,
                 return_sequences=False, 
                 return_state=False,
-                backend="default.qubit"):
+                backend="lightning.gpu"):
         super(QLSTM, self).__init__()
         print(f"Initializing QLSTM: input_size={input_size}, hidden_size={hidden_size}, n_qubits={n_qubits}, backend={backend}")
         self.n_inputs = input_size

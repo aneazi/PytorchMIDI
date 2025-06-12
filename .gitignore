@@ -1,3 +1,6 @@
 myenv
 regular_output.mid 
 local
+slurm.err
+slurm.out
+myjob.sh
