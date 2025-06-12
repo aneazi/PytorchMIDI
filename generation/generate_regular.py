@@ -13,7 +13,7 @@ from models.music_rnn import MusicRNN
 
 # Parameters
 weight_path = "outputs/music_rnn_300.pt"  # Regular model weights
-midi_dir = "../maestro-v3.0.0"
+midi_dir = Path("../maestro-v3.0.0")
 output_midi = "outputs/regular_output_300.mid"
 instrument_name = "Acoustic Grand Piano"
 seq_len = 32

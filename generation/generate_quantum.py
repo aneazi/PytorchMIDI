@@ -13,10 +13,10 @@ from models.quantum_music_rnn import QuantumMusicRNN
 
 # Parameters
 weight_path = "quantum_music_rnn.pt"  # Updated to match quantum model weights
-midi_dir = "../maestro-v3.0.0"
+midi_dir = Path("../maestro-v3.0.0")
 output_midi = "outputs/quantum_output.mid"
 instrument_name = "Acoustic Grand Piano"
-seq_len = 25
+seq_len = 32
 num_predictions = 120
 temperature = 1.0
 time_stretch = 1.0
@@ -39,7 +39,7 @@ def load_quantum_model(device: torch.device) -> QuantumMusicRNN:
     model = QuantumMusicRNN(
         input_size=3, 
         hidden_size=128,
-        n_qubits=4,
+        n_qubits=8,
         n_qlayers=1
     ).to(device)
     
@@ -127,8 +127,6 @@ def main():
 
     # 2) Load model
     model = load_quantum_model(device)
-    # 3) Pick a MIDI to seed from
-    midi_dir = Path("../maestro-v3.0.0")
     
     paths = list(midi_dir.rglob('*.mid')) + list(midi_dir.rglob('*.midi'))
     print(len(paths))
@@ -140,16 +138,16 @@ def main():
     # use the first SEQ_LEN notes
     seed = arr[:seq_len]
 
-    # 4) Sample
+    # 3) Sample
     print(f"Sampling {num_predictions} notes (T={temperature})…")
     gen_df = sample_sequence(model, seed, num_predictions, temperature, device)
     print(gen_df.head(10))
 
-    # 5) Export to MIDI
+    # 4) Export to MIDI
     notes_to_midi(gen_df, output_midi, instrument_name)
     print("Wrote generated MIDI to", output_midi)
 
-    """ # 6) PLay via pygame
+    """ # 5) PLay via pygame
     freq = 44100  # audio CD quality
     bitsize = -16   # unsigned 16 bit
     channels = 1  # 1 is mono, 2 is stereo

@@ -20,10 +20,10 @@ def main():
     """
     - Takes length of sequence and number of files to load.
     """
-    seq_len=16
-    max_files=5
+    seq_len=32
+    max_files=10
     batch_size=32
-    learning_rate=0.001
+    learning_rate=0.0005
     num_epochs=50
     """
     - Loads MIDI dataset from MAESTRO v3.0.0.
@@ -43,20 +43,11 @@ def main():
     model = QuantumMusicRNN(
         input_size=3, 
         hidden_size=128,
-        n_qubits=4,
+        n_qubits=8,
         n_qlayers=1
     ).to(device)
     print("\nModel parameters:")
-    for name, param in model.named_parameters():
-        print(f"{name}: {param.shape}")
-
-    # Check if quantum parameters are registered
-    quantum_params = [name for name, _ in model.named_parameters() if 'VQC' in name]
-    print(f"\nQuantum parameters found: {len(quantum_params)}")
-    if not quantum_params:
-        print("ERROR: No quantum parameters found! This confirms the nn.ModuleDict issue.")
-    else:
-        print("Quantum parameters:", quantum_params)
+    
     criterion_pitch = nn.CrossEntropyLoss()  # for 128-way pitch classification
     criterion_step = nn.MSELoss()            # for scalar step prediction
     criterion_duration = nn.MSELoss()        # for scalar duration prediction

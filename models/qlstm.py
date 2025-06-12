@@ -7,7 +7,7 @@ class QLSTM(nn.Module):
     def __init__(self, 
                 input_size, 
                 hidden_size, 
-                n_qubits=4,
+                n_qubits=8,
                 n_qlayers=1,
                 batch_first=True,
                 return_sequences=False, 
@@ -17,7 +17,8 @@ class QLSTM(nn.Module):
         print(f"Initializing QLSTM: input_size={input_size}, hidden_size={hidden_size}, n_qubits={n_qubits}, backend={backend}")
         self.n_inputs = input_size
         self.hidden_size = hidden_size
-        self.concat_size = self.n_inputs + self.hidden_size
+        # New architecture: quantum processing of hidden state, then concatenate with input
+        self.quantum_concat_size = self.hidden_size + self.n_inputs  # quantum processed hidden + input
         self.n_qubits = n_qubits
         self.n_qlayers = n_qlayers
         self.backend = backend
@@ -26,58 +27,41 @@ class QLSTM(nn.Module):
         self.return_sequences = return_sequences
         self.return_state = return_state
 
-        # Create separate devices for each gate
-        self.wires_forget = [f"wire_forget_{i}" for i in range(self.n_qubits)]
-        self.wires_input = [f"wire_input_{i}" for i in range(self.n_qubits)]
-        self.wires_update = [f"wire_update_{i}" for i in range(self.n_qubits)]
-        self.wires_output = [f"wire_output_{i}" for i in range(self.n_qubits)]
+        # Create quantum device and circuit for hidden state processing
+        self.wires = [f"wire_{i}" for i in range(self.n_qubits)]
+        self.dev = qml.device(self.backend, wires=self.wires)
 
-        self.dev_forget = qml.device(self.backend, wires=self.wires_forget)
-        self.dev_input = qml.device(self.backend, wires=self.wires_input)
-        self.dev_update = qml.device(self.backend, wires=self.wires_update)
-        self.dev_output = qml.device(self.backend, wires=self.wires_output)
+        # Create QNode for quantum processing of hidden state (no trainable parameters)
+        self.qlayer = qml.QNode(self._quantum_circuit, self.dev, interface="torch")
 
-        # Create QNodes with pre-defined circuits (defined once)
-        self.qlayer_forget = qml.QNode(self._circuit_forget, self.dev_forget, interface="torch")
-        self.qlayer_input = qml.QNode(self._circuit_input, self.dev_input, interface="torch")
-        self.qlayer_update = qml.QNode(self._circuit_update, self.dev_update, interface="torch")
-        self.qlayer_output = qml.QNode(self._circuit_output, self.dev_output, interface="torch")
+        print("Creating classical layers and fixed quantum processing components...")
+        # Compress hidden state to qubits
+        self.hidden_to_qubits = torch.nn.Linear(self.hidden_size, n_qubits)
+        # Fixed quantum processing layer (no trainable parameters)
+        # Expand quantum output back to hidden size
+        self.qubits_to_hidden = torch.nn.Linear(self.n_qubits, self.hidden_size)
+        
+        # Classical LSTM gates (process concatenated quantum-processed hidden + input)
+        self.W_f = torch.nn.Linear(self.quantum_concat_size, self.hidden_size)  # forget gate
+        self.W_i = torch.nn.Linear(self.quantum_concat_size, self.hidden_size)  # input gate
+        self.W_g = torch.nn.Linear(self.quantum_concat_size, self.hidden_size)  # candidate gate
+        self.W_o = torch.nn.Linear(self.quantum_concat_size, self.hidden_size)  # output gate
 
-        # Weight shapes for quantum layers
-        weight_shapes = {"weights": (n_qlayers, n_qubits)}
-        print(f"QLSTM weight_shapes = (n_qlayers, n_qubits) = ({n_qlayers}, {n_qubits})")
+    # Define quantum circuit for hidden state processing (fixed transformation)
+    def _quantum_circuit(self, inputs):
+        # Apply angle embedding to encode classical data
+        qml.templates.AngleEmbedding(inputs, wires=self.wires)
 
-        # Classical layers
-        print("Creating classical layers and VQC components...")
-        self.clayer_in = torch.nn.Linear(self.concat_size, n_qubits)
-        self.VQC = nn.ModuleDict({
-            'forget': qml.qnn.TorchLayer(self.qlayer_forget, weight_shapes),
-            'input': qml.qnn.TorchLayer(self.qlayer_input, weight_shapes),
-            'candidate': qml.qnn.TorchLayer(self.qlayer_update, weight_shapes),
-            'output': qml.qnn.TorchLayer(self.qlayer_output, weight_shapes)
-        })
-        self.clayer_out = torch.nn.Linear(self.n_qubits, self.hidden_size)
-
-    # Define circuits as class methods (created once, not per forward pass)
-    def _circuit_forget(self, inputs, weights):
-        qml.templates.AngleEmbedding(inputs, wires=self.wires_forget)
-        qml.templates.BasicEntanglerLayers(weights, wires=self.wires_forget)
-        return [qml.expval(qml.PauliZ(wires=w)) for w in self.wires_forget]
-    
-    def _circuit_input(self, inputs, weights):
-        qml.templates.AngleEmbedding(inputs, wires=self.wires_input)
-        qml.templates.BasicEntanglerLayers(weights, wires=self.wires_input)
-        return [qml.expval(qml.PauliZ(wires=w)) for w in self.wires_input]
-    
-    def _circuit_update(self, inputs, weights):
-        qml.templates.AngleEmbedding(inputs, wires=self.wires_update)
-        qml.templates.BasicEntanglerLayers(weights, wires=self.wires_update)
-        return [qml.expval(qml.PauliZ(wires=w)) for w in self.wires_update]
-    
-    def _circuit_output(self, inputs, weights):
-        qml.templates.AngleEmbedding(inputs, wires=self.wires_output)
-        qml.templates.BasicEntanglerLayers(weights, wires=self.wires_output)
-        return [qml.expval(qml.PauliZ(wires=w)) for w in self.wires_output]
+        for i in range(self.n_qubits - 1):
+            qml.CNOT(wires=[self.wires[i], self.wires[i + 1]])
+        qml.CNOT(wires=[self.wires[-1], self.wires[0]])  # Connect last to first
+        
+        for i in range(self.n_qubits - 2):
+            qml.CNOT(wires=[self.wires[i], self.wires[i + 2]])
+        qml.CNOT(wires=[self.wires[-2], self.wires[0]])  # Connect second last to first
+        qml.CNOT(wires=[self.wires[-1], self.wires[1]])  # Connect last to second
+        
+        return [qml.expval(qml.PauliZ(wires=w)) for w in self.wires]
 
     def forward(self, x, init_states=None):
         """
@@ -100,25 +84,33 @@ class QLSTM(nn.Module):
             # Get features from the t-th element in seq
             x_t = x[:, t, :]
             
-            # Concatenate input and hidden state
-            v_t = torch.cat((h_t, x_t), dim=1)
-
-            # Match qubit dimension
-            y_t = self.clayer_in(v_t)
+            # Step 1: Compress hidden state to qubit representation
+            h_compressed = self.hidden_to_qubits(h_t)  # (batch_size, n_qubits)
             
-            # Time quantum circuits
-            f_out = self.VQC['forget'](y_t)
-            i_out = self.VQC['input'](y_t)
-            g_out = self.VQC['candidate'](y_t)
-            o_out = self.VQC['output'](y_t)
+            # Step 2: Process through quantum circuit
+            h_quantum_raw = self.qlayer(h_compressed)  # (batch_size, n_qubits)
             
-            # Time classical operations
-            f_t = torch.sigmoid(self.clayer_out(f_out))  # forget gate
-            i_t = torch.sigmoid(self.clayer_out(i_out))   # input gate
-            g_t = torch.tanh(self.clayer_out(g_out))     # update gate
-            o_t = torch.sigmoid(self.clayer_out(o_out))  # output gate
+            # Step 3: Convert to tensor if it's a list/tuple
+            if isinstance(h_quantum_raw, (list, tuple)):
+                h_quantum = torch.stack(h_quantum_raw, dim=-1)  # Stack along last dimension
+            else:
+                h_quantum = h_quantum_raw
             
-            # Update cell and hidden states
+            h_quantum=h_quantum.float()  # Ensure it's a float tensor
+            
+            # Step 4: Expand quantum output back to hidden size
+            h_quantum_expanded = self.qubits_to_hidden(h_quantum)  # (batch_size, hidden_size)
+            
+            # Step 5: Concatenate quantum-processed hidden with current input
+            combined_input = torch.cat((h_quantum_expanded, x_t), dim=1)  # (batch_size, hidden_size + input_size)
+            
+            # Step 6: Classical LSTM gates
+            f_t = torch.sigmoid(self.W_f(combined_input))  # forget gate
+            i_t = torch.sigmoid(self.W_i(combined_input))  # input gate  
+            g_t = torch.tanh(self.W_g(combined_input))     # candidate gate
+            o_t = torch.sigmoid(self.W_o(combined_input))  # output gate
+            
+            # Step 7: Update cell and hidden states (standard LSTM)
             c_t = (f_t * c_t) + (i_t * g_t)
             h_t = o_t * torch.tanh(c_t)
 
