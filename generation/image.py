@@ -24,7 +24,7 @@ def midi_to_pianoroll(midi_file, output_file, fs=100):
     # Plot the piano roll
     plt.figure(figsize=(12, 6))
     plt.imshow(piano_roll_bool, aspect='auto', origin='lower', cmap='gray_r')
-    plt.xlabel('Time (s)'.format(fs))
+    plt.xlabel('Time'.format(fs))
     plt.ylabel('Note Number')
     plt.title(f'qLSTM Generated Piano Roll')
     plt.tight_layout()
