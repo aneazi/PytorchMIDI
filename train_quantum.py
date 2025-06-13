@@ -118,9 +118,8 @@ def main():
               f"step={sum_step/batches:.4f}  "
               f"dur={sum_duration/batches:.4f} "
               f"vel={sum_velocity/batches:.4f}")
-    
-    torch.save(model.state_dict(), model_path)
-    print(f"Quantum model weights saved to {model_path}")
+        torch.save(model.state_dict(), model_path)
+        print(f"Quantum model weights saved to {model_path}")
 
 
 if __name__ == "__main__":
