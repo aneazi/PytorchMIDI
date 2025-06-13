@@ -2,7 +2,7 @@ import torch
 import torch.nn as nn
 import pennylane as qml
 import time
-
+import math
 class QLSTM(nn.Module):
     def __init__(self, 
                 input_size, 
@@ -50,7 +50,7 @@ class QLSTM(nn.Module):
     # Define quantum circuit for hidden state processing (fixed transformation)
     def _quantum_circuit(self, inputs):
         # Apply angle embedding to encode classical data
-        qml.templates.AngleEmbedding(inputs, wires=self.wires)
+        qml.AngleEmbedding(inputs, wires=self.wires, rotation="Y")
 
         for i in range(self.n_qubits - 1):
             qml.CNOT(wires=[self.wires[i], self.wires[i + 1]])
