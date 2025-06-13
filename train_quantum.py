@@ -48,7 +48,7 @@ def main():
     model = QuantumMusicRNN(
         input_size=4,
         hidden_size=128,
-        n_qubits=8,
+        n_qubits=4,
         n_qlayers=1
     ).to(device)
     print("\nModel parameters:")

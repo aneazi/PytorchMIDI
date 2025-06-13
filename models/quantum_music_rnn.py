@@ -8,7 +8,7 @@ class QuantumMusicRNN(nn.Module):
     def __init__(self, 
                  input_size: int = 4,
                  hidden_size: int = 128,
-                 n_qubits: int = 8,
+                 n_qubits: int = 4,
                  n_qlayers: int = 1,
                  dropout: float = 0.0):
         super().__init__()

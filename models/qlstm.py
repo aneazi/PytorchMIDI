@@ -7,7 +7,7 @@ class QLSTM(nn.Module):
     def __init__(self, 
                 input_size, 
                 hidden_size, 
-                n_qubits=8,
+                n_qubits=4,
                 n_qlayers=1,
                 batch_first=True,
                 return_sequences=False, 
