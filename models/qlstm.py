@@ -83,7 +83,6 @@ class QLSTM(nn.Module):
         for t in range(seq_length):
             # Get features from the t-th element in seq
             x_t = x[:, t, :]
-            start_quantum_time = time.time()
             # Step 1: Compress hidden state to qubit representation
             h_compressed = self.hidden_to_qubits(h_t)  # (batch_size, n_qubits)
             
@@ -103,10 +102,7 @@ class QLSTM(nn.Module):
             
             # Step 5: Concatenate quantum-processed hidden with current input
             combined_input = torch.cat((h_quantum_expanded, x_t), dim=1)  # (batch_size, hidden_size + input_size)
-            end_quantum_time = time.time()
-            print(f"Quantum processing time for step: {end_quantum_time - start_quantum_time:.4f} seconds")
             # Step 6: Classical LSTM gates
-            start_classical=time.time()
             f_t = torch.sigmoid(self.W_f(combined_input))  # forget gate
             i_t = torch.sigmoid(self.W_i(combined_input))  # input gate  
             g_t = torch.tanh(self.W_g(combined_input))     # candidate gate
@@ -115,8 +111,6 @@ class QLSTM(nn.Module):
             # Step 7: Update cell and hidden states (standard LSTM)
             c_t = (f_t * c_t) + (i_t * g_t)
             h_t = o_t * torch.tanh(c_t)
-            end_classical=time.time()
-            print(f"Classical processing time for step: {end_classical - start_classical:.4f} seconds")
             hidden_seq.append(h_t.unsqueeze(0))
         hidden_seq = torch.cat(hidden_seq, dim=0)
         hidden_seq = hidden_seq.transpose(0, 1).contiguous()
