@@ -74,6 +74,7 @@ def main():
         sum_velocity = 0.0
         
         for batch_seq, batch_nxt in loader:
+            time_start = time.time()
             batch_seq = batch_seq.to(device)   # (B, SEQ_LEN, 4)
             batch_nxt = batch_nxt.to(device)   # (B, 4)
             optimizer.zero_grad()
@@ -103,6 +104,8 @@ def main():
             sum_step += loss_s.item()
             sum_duration += loss_d.item()
             sum_velocity += loss_v.item()
+            time_end=time.time()
+            print(f"Batch took {time_end - time_start:.4f} seconds")
         epoch_time = time.time() - epoch_start_time
         # report averages
         batches = len(loader)

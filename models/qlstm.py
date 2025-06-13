@@ -12,7 +12,7 @@ class QLSTM(nn.Module):
                 batch_first=True,
                 return_sequences=False, 
                 return_state=False,
-                backend="lightning.gpu"):
+                backend="default.qubit"):
         super(QLSTM, self).__init__()
         print(f"Initializing QLSTM: input_size={input_size}, hidden_size={hidden_size}, n_qubits={n_qubits}, backend={backend}")
         self.n_inputs = input_size
@@ -83,7 +83,7 @@ class QLSTM(nn.Module):
         for t in range(seq_length):
             # Get features from the t-th element in seq
             x_t = x[:, t, :]
-            
+            start_quantum_time = time.time()
             # Step 1: Compress hidden state to qubit representation
             h_compressed = self.hidden_to_qubits(h_t)  # (batch_size, n_qubits)
             
@@ -103,7 +103,8 @@ class QLSTM(nn.Module):
             
             # Step 5: Concatenate quantum-processed hidden with current input
             combined_input = torch.cat((h_quantum_expanded, x_t), dim=1)  # (batch_size, hidden_size + input_size)
-            
+            end_quantum_time = time.time()
+            print(f"Quantum processing time for step: {end_quantum_time - start_quantum_time:.4f} seconds")
             # Step 6: Classical LSTM gates
             f_t = torch.sigmoid(self.W_f(combined_input))  # forget gate
             i_t = torch.sigmoid(self.W_i(combined_input))  # input gate  
