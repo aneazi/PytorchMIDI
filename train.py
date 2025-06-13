@@ -19,7 +19,7 @@ def main():
     np.random.seed(seed)
     torch.manual_seed(seed)
     
-    device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+    device = torch.device("cuda" if torch.cuda.is_available() else "mps")
     print(f"Using device: {device}")
     """
     - Takes length of sequence and number of files to load.
@@ -62,7 +62,7 @@ def main():
         sum_duration = 0.0
         sum_velocity = 0.0
 
-        for batch_seq, batch_nxt in loader:
+        for batch_idx, (batch_seq, batch_nxt) in enumerate(loader):
             batch_seq = batch_seq.to(device)   # (B, SEQ_LEN, 4)
             batch_nxt = batch_nxt.to(device)   # (B, 4)
             optimizer.zero_grad()
@@ -93,6 +93,12 @@ def main():
             sum_step += loss_s.item()
             sum_duration += loss_d.item()
             sum_velocity += loss_v.item()
+            
+            # Show batch progress every 100 batches or at the end
+            if (batch_idx + 1) % 100 == 0 or (batch_idx + 1) == len(loader):
+                batch_progress = (batch_idx + 1) / len(loader) * 100
+                print(f"  Epoch {epoch}/{num_epochs} - Batch {batch_idx + 1}/{len(loader)} ({batch_progress:.1f}%)")
+        
         # report averages
         end_time=time.time()-start_time
         batches = len(loader)
