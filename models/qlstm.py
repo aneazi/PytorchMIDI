@@ -50,15 +50,11 @@ class QLSTM(nn.Module):
     
     def forward(self, x_t, hidden_states):
         h_t, c_t = hidden_states        
-        time_start_quantum=time.time()
         c_compressed = self.memory_to_qubits(c_t)
         c_quantum_raw = self.qlayer(c_compressed)
         c_quantum_raw = torch.stack(c_quantum_raw, dim=-1).type(torch.float32)
         c_quantum_expanded = self.qubits_to_memory(c_quantum_raw)
-        time_end_quantum=time.time()
-        print(f"Quantum layer time: {time_end_quantum - time_start_quantum:.4f} seconds")
         
-        time_start_classical = time.time()
         f_t = torch.sigmoid(
             self.forget_gate_input(x_t) + 
             self.forget_gate_hidden(h_t)
@@ -84,6 +80,4 @@ class QLSTM(nn.Module):
         
         # Update hidden state
         h_t = o_t * torch.tanh(c_t)
-        time_end_classical = time.time()
-        print(f"Classical layer time: {time_end_classical - time_start_classical:.4f} seconds")
         return h_t, (h_t, c_t)
