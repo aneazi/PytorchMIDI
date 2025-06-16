@@ -13,7 +13,7 @@ class QLSTM(nn.Module):
 
         self.memory_to_qubits = nn.Linear(hidden_size, n_qubits)
         
-        dev = qml.device("lightning.gpu", wires=self.n_qubits)
+        dev = qml.device("default.qubit", wires=self.n_qubits)
         print(dev.__class__)
         @qml.qnode(dev, interface="torch")
         def circuit(inputs):
