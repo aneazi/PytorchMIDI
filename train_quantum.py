@@ -6,6 +6,7 @@ import torch
 import torch.nn as nn
 import torch.optim as optim
 from torch.utils.data import DataLoader
+from torch.optim.lr_scheduler import StepLR
 from data.midi_dataset import MidiSequenceDataset
 from models.quantum_music_rnn import QuantumMusicRNN
 import time
@@ -59,6 +60,7 @@ def main():
     criterion_velocity = nn.MSELoss()        # for scalar velocity prediction (if needed)
 
     optimizer = optim.Adam(model.parameters(), lr=learning_rate)
+    scheduler = StepLR(optimizer, step_size=15, gamma=0.5)
     print(f"Starting training for {num_epochs} epochs...")
     """
     - Training loop.
@@ -72,7 +74,9 @@ def main():
         sum_step = 0.0
         sum_duration = 0.0
         sum_velocity = 0.0
-        
+        scheduler.step()
+        current_lr = optimizer.param_groups[0]['lr']
+        print(f"Epoch {epoch}/{num_epochs} - Learning Rate: {current_lr:.6f}")
         for batch_idx, (batch_seq, batch_nxt) in enumerate(loader):
             batch_seq = batch_seq.to(device)   # (B, SEQ_LEN, 4)
             batch_nxt = batch_nxt.to(device)   # (B, 4)
