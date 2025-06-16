@@ -44,7 +44,7 @@ def load_quantum_model(device: torch.device) -> QuantumMusicRNN:
     model = QuantumMusicRNN(
         input_size=4, 
         hidden_size=128,
-        n_qubits=8,
+        n_qubits=4,
         n_qlayers=1
     ).to(device)
     
@@ -136,7 +136,7 @@ def main():
     paths = list(midi_dir.rglob('*.mid')) + list(midi_dir.rglob('*.midi'))
     print(len(paths))
     random_file = random.choice(paths)
-    seed_file = random_file
+    seed_file = paths[0]
     print("Seeding from:", seed_file)
     df_seed = midi_to_notes(str(seed_file))
     arr = notes_df_to_array(df_seed)
@@ -152,7 +152,7 @@ def main():
     notes_to_midi(gen_df, output_midi, instrument_name)
     print("Wrote generated MIDI to", output_midi)
 
-    """ # 5) PLay via pygame
+    # 5) Play via pygame
     freq = 44100  # audio CD quality
     bitsize = -16   # unsigned 16 bit
     channels = 1  # 1 is mono, 2 is stereo
@@ -160,8 +160,8 @@ def main():
     pygame.mixer.init(freq, bitsize, channels, buffer)
 
     # optional volume 0 to 1.0
-    pygame.mixer.music.set_volume(0.8)
-    play_music(output_midi) """
+    pygame.mixer.music.set_volume(1.0)
+    play_music(output_midi)
 
 if __name__ == "__main__":
     main()

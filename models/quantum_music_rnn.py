@@ -5,11 +5,11 @@ from .qlstm import QLSTM
 
 
 class QuantumMusicRNN(nn.Module):
-    def __init__(self, 
-                 input_size: int = 4,
-                 hidden_size: int = 128,
-                 n_qubits: int = 4,
-                 n_qlayers: int = 1,
+    def __init__(self,
+                 n_qubits,
+                 n_qlayers,
+                 input_size=4,
+                 hidden_size=128,
                  dropout: float = 0.0):
         super().__init__()
         
@@ -21,8 +21,6 @@ class QuantumMusicRNN(nn.Module):
             hidden_size=hidden_size,
             n_qubits=n_qubits,
             n_qlayers=n_qlayers,
-            batch_first=True,
-            return_sequences=True
         )
         
         # Output heads remain the same
@@ -43,19 +41,26 @@ class QuantumMusicRNN(nn.Module):
           'duration': (batch_size, 1)    — real prediction
           'velocity': (batch_size, 1)  — real prediction
         """
-        # Pass through QLSTM
-        lstm_out, (h_n, c_n) = self.qlstm(x)
-        
-        # Use the last hidden state
-        features = h_n  # Shape: (batch_size, hidden_size)
-        
-        # Apply dropout if specified
+        # x: (batch_size, seq_len, 4)
+        B, T, _ = x.shape
+        # initialize hidden + cell
+        h_t = torch.zeros(B, self.qlstm.hidden_size, device=x.device)
+        c_t = torch.zeros(B, self.qlstm.hidden_size, device=x.device)
+
+        # step through the sequence
+        for t in range(T):
+            x_t = x[:, t, :]                   # (B, 4)
+            h_t, (h_t, c_t) = self.qlstm(x_t, (h_t, c_t))
+
+        # h_t now holds your final hidden state
+        features = h_t                       # (B, hidden_size)
+
         if self.dropout:
             features = self.dropout(features)
-        
+
         return {
-            'pitch': self.fc_pitch(features),
-            'step': self.fc_step(features),
+            'pitch':    self.fc_pitch(features),
+            'step':     self.fc_step(features),
             'duration': self.fc_duration(features),
             'velocity': self.fc_velocity(features),
         }

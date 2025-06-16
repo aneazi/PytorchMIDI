@@ -19,7 +19,6 @@ def visualize_quantum_circuits():
         hidden_size=128,
         n_qubits=8,  # Updated to match your current config
         n_qlayers=1,
-        backend="default.qubit"
     )
     
     # Create dummy inputs for visualization
