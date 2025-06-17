@@ -1,15 +1,15 @@
 # Training config
 DATASET: "../maestro-v3.0.0"
 SEQ_LEN: 64
-MAX_FILES: 100
+MAX_FILES: 1
 BATCH_SIZE: 256
 LEARNING_RATE: 0.001
 EPOCHS: 50
 
 # Generation Config
 NUM_PREDICTIONS: 120
-TEMPERATURE: 1.25
-TIME_STRETCH: 2.0
+TEMPERATURE: 1.5
+TIME_STRETCH: 1.5
 INSTRUMENT_NAME: "Acoustic Grand Piano"
 
 # Classical Specs
@@ -18,6 +18,6 @@ CLASSICAL_SEED_DIR: "../maestro-v3.0.0"
 CLASSICAL_OUTPUT_PATH: "outputs/music/output.mid"
 
 # Quantum Specs
-QUANTUM_MODEL_PATH: "outputs/models/memory/quantum_rnn_100.pt"
+QUANTUM_MODEL_PATH: "outputs/models/memory/quantum_rnn_10_mem.pt"
 QUANTUM_SEED_DIR: "../maestro-v3.0.0"
-QUANTUM_OUTPUT_PATH: "outputs/music/memory/quantum_output_10_1.mid"
+QUANTUM_OUTPUT_PATH: "outputs/music/memory/quantum_output_10_10.mid"

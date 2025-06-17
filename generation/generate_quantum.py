@@ -136,7 +136,7 @@ def main():
     paths = list(midi_dir.rglob('*.mid')) + list(midi_dir.rglob('*.midi'))
     print(len(paths))
     random_file = random.choice(paths)
-    seed_file = paths[0]
+    seed_file = paths[8]
     print("Seeding from:", seed_file)
     df_seed = midi_to_notes(str(seed_file))
     arr = notes_df_to_array(df_seed)
