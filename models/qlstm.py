@@ -17,7 +17,6 @@ class QLSTM(nn.Module):
         print(dev.__class__)
         @qml.qnode(dev, interface="torch")
         def circuit(inputs):
-
             qml.AngleEmbedding(inputs, wires=range(self.n_qubits))
             
             # Quantum processing layers
