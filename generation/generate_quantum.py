@@ -62,7 +62,7 @@ def sample_sequence(
 ) -> pd.DataFrame:
     """
     Autoregressively sample next notes.
-    seed: array shape (SEQ_LEN, 3) of [pitch, step, duration, velocity].
+    seed: array shape (SEQ_LEN, 4) of [pitch, step, duration, velocity].
     returns a DataFrame with columns
       ['pitch','step','duration','start','end','velocity'] of length num_steps.
     """
@@ -136,7 +136,7 @@ def main():
     paths = list(midi_dir.rglob('*.mid')) + list(midi_dir.rglob('*.midi'))
     print(len(paths))
     random_file = random.choice(paths)
-    seed_file = paths[0]
+    seed_file = paths[40]
     print("Seeding from:", seed_file)
     df_seed = midi_to_notes(str(seed_file))
     arr = notes_df_to_array(df_seed)

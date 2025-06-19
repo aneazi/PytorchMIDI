@@ -14,21 +14,22 @@ class QLSTM(nn.Module):
         self.memory_to_qubits = nn.Linear(hidden_size, n_qubits)
         
         dev = qml.device("default.qubit", wires=self.n_qubits)
-        print(dev.__class__)
+        reps = 3  # number of data‐upload repeats
+
         @qml.qnode(dev, interface="torch")
         def circuit(inputs):
-            qml.AngleEmbedding(inputs, wires=range(self.n_qubits))
-            
-            # Quantum processing layers
-            for i in range(self.n_qubits - 1):
-                qml.CNOT(wires=[i, i + 1])
-            qml.CNOT(wires=[self.n_qubits - 1, 0])
-            for i in range(self.n_qubits - 2):
-                qml.CNOT(wires=[i, i + 2])
-            qml.CNOT(wires=[self.n_qubits - 2, 0])
-            qml.CNOT(wires=[self.n_qubits - 1, 1])
-            
-            return [qml.expval(qml.PauliZ(i)) for i in range(self.n_qubits)]
+            for _ in range(reps):
+                qml.AngleEmbedding(inputs, wires=range(n_qubits))
+
+                for i in range(n_qubits - 1):
+                    qml.CNOT(wires=[i, i + 1])
+                qml.CNOT(wires=[n_qubits - 1, 0])
+                for i in range(n_qubits - 2):
+                    qml.CNOT(wires=[i, i + 2])
+                qml.CNOT(wires=[n_qubits - 2, 0])
+                qml.CNOT(wires=[n_qubits - 1, 1])
+
+            return [qml.expval(qml.PauliZ(i)) for i in range(n_qubits)]
         
         self.qlayer = circuit
         self.qubits_to_memory = nn.Linear(n_qubits, hidden_size)

@@ -60,7 +60,6 @@ def main():
     criterion_velocity = nn.MSELoss()        # for scalar velocity prediction (if needed)
 
     optimizer = optim.Adam(model.parameters(), lr=learning_rate)
-    scheduler = StepLR(optimizer, step_size=15, gamma=0.5)
     print(f"Starting training for {num_epochs} epochs...")
     """
     - Training loop.
@@ -74,8 +73,7 @@ def main():
         sum_step = 0.0
         sum_duration = 0.0
         sum_velocity = 0.0
-        current_lr = optimizer.param_groups[0]['lr']
-        print(f"Epoch {epoch}/{num_epochs} - Learning Rate: {current_lr:.6f}")
+        print(f"Epoch {epoch}/{num_epochs}")
         for batch_idx, (batch_seq, batch_nxt) in enumerate(loader):
             batch_seq = batch_seq.to(device)   # (B, SEQ_LEN, 4)
             batch_nxt = batch_nxt.to(device)   # (B, 4)
@@ -110,7 +108,6 @@ def main():
             if (batch_idx + 1) % 100 == 0 or (batch_idx + 1) == len(loader):
                 batch_progress = (batch_idx + 1) / len(loader) * 100
                 print(f"  Epoch {epoch}/{num_epochs} - Batch {batch_idx + 1}/{len(loader)} ({batch_progress:.1f}%)")
-        scheduler.step()
         epoch_time = time.time() - epoch_start_time
         # report averages
         batches = len(loader)

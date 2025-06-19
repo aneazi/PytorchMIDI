@@ -1,6 +1,6 @@
 # Training config
 DATASET: "myDataset"
-SEQ_LEN: 32
+SEQ_LEN: 64
 MAX_FILES: 1
 BATCH_SIZE: 32
 LEARNING_RATE: 0.001
@@ -18,6 +18,6 @@ CLASSICAL_SEED_DIR: "myDataset"
 CLASSICAL_OUTPUT_PATH: "outputs/music/output.mid"
 
 # Quantum Specs
-QUANTUM_MODEL_PATH: "outputs/models/memory/quantum_rnn_test.pt"
-QUANTUM_SEED_DIR: "myDataset"
-QUANTUM_OUTPUT_PATH: "outputs/music/memory/quantum_output_test.mid"
+QUANTUM_MODEL_PATH: "outputs/models/memory/quantum_rnn_100_mem.pt"
+QUANTUM_SEED_DIR: "../maestro-v3.0.0"
+QUANTUM_OUTPUT_PATH: "outputs/music/memory/quantum_output_100_9.mid"
