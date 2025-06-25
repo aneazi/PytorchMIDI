@@ -13,7 +13,7 @@ TIME_STRETCH: 1.5
 INSTRUMENT_NAME: "Acoustic Grand Piano"
 
 # Classical Specs
-CLASSICAL_MODEL_PATH: "outputs/models/music_rnn.pt"
+CLASSICAL_MODEL_PATH: "outputs/models/music_rnn_10.pt"
 CLASSICAL_SEED_DIR: "myDataset"
 CLASSICAL_OUTPUT_PATH: "outputs/music/output.mid"
 

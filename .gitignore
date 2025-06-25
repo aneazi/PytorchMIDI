@@ -4,3 +4,5 @@ local
 slurm.err
 slurm.out
 myjob.sh
+classical_slurm.out
+classical_slurm.err
