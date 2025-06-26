@@ -14,7 +14,7 @@ class QLSTM(nn.Module):
         self.memory_to_qubits = nn.Linear(hidden_size, n_qubits)
         
         dev = qml.device("default.qubit", wires=self.n_qubits)
-        reps = 10  # number of data‐upload repeats
+        reps = 3  # number of data‐upload repeats
 
         @qml.qnode(dev, interface="torch")
         def circuit(inputs):

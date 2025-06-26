@@ -5,4 +5,5 @@ slurm.err
 slurm.out
 myjob.sh
 classical_slurm.out
+classical_job.sh
 classical_slurm.err
