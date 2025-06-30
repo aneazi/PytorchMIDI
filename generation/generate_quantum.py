@@ -152,7 +152,7 @@ def main():
     notes_to_midi(gen_df, output_midi, instrument_name)
     print("Wrote generated MIDI to", output_midi)
 
-    """ # 5) Play via pygame
+    # 5) Play via pygame
     freq = 44100  # audio CD quality
     bitsize = -16   # unsigned 16 bit
     channels = 1  # 1 is mono, 2 is stereo
@@ -161,7 +161,7 @@ def main():
 
     # optional volume 0 to 1.0
     pygame.mixer.music.set_volume(1.0)
-    play_music(output_midi) """
+    play_music(output_midi)
 
 if __name__ == "__main__":
     main()

@@ -7,3 +7,5 @@ myjob.sh
 classical_slurm.out
 classical_job.sh
 classical_slurm.err
+__pycache__/
+*.py[cod]
