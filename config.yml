@@ -13,11 +13,11 @@ TIME_STRETCH: 1.5
 INSTRUMENT_NAME: "Acoustic Grand Piano"
 
 # Classical Specs
-CLASSICAL_MODEL_PATH: "outputs/models/music_rnn_10.pt"
+CLASSICAL_MODEL_PATH: "outputs/models/test.pt"
 CLASSICAL_SEED_DIR: "myDataset"
-CLASSICAL_OUTPUT_PATH: "outputs/music/output.mid"
+CLASSICAL_OUTPUT_PATH: "outputs/music/test.mid"
 
 # Quantum Specs
-QUANTUM_MODEL_PATH: "outputs/models/memory/quantum_rnn_10.pt"
+QUANTUM_MODEL_PATH: "outputs/models/memory/iqp_rnn_10.pt"
 QUANTUM_SEED_DIR: "myDataset"
-QUANTUM_OUTPUT_PATH: "outputs/music/memory/quantum_output_test.mid"
+QUANTUM_OUTPUT_PATH: "outputs/music/memory/test.mid"

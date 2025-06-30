@@ -70,7 +70,9 @@ def sample_sequence(
     prev_start = 0.0
     seq = seed.copy()
 
-    for _ in range(num_steps):
+    for note in range(num_steps):
+        if note % 10 == 0:
+            print(f"Generating note {note + 1}/{num_steps}…")
         # to tensor (1, SEQ_LEN, 4)
         x = torch.from_numpy(seq).float().unsqueeze(0).to(device)
         with torch.no_grad():
@@ -151,17 +153,17 @@ def main():
     # 4) Export to MIDI
     notes_to_midi(gen_df, output_midi, instrument_name)
     print("Wrote generated MIDI to", output_midi)
+    # # 5) Play via pygame
+    # freq = 44100  # audio CD quality
+    # bitsize = -16   # unsigned 16 bit
+    # channels = 1  # 1 is mono, 2 is stereo
+    # buffer = 1024   # number of samples
+    # pygame.mixer.init(freq, bitsize, channels, buffer)
 
-    # 5) Play via pygame
-    freq = 44100  # audio CD quality
-    bitsize = -16   # unsigned 16 bit
-    channels = 1  # 1 is mono, 2 is stereo
-    buffer = 1024   # number of samples
-    pygame.mixer.init(freq, bitsize, channels, buffer)
-
-    # optional volume 0 to 1.0
-    pygame.mixer.music.set_volume(1.0)
-    play_music(output_midi)
+    # # optional volume 0 to 1.0
+    # pygame.mixer.music.set_volume(1.0)
+    # play_music(output_midi)
+    
 
 if __name__ == "__main__":
     main()

@@ -18,17 +18,10 @@ class QLSTM(nn.Module):
 
         @qml.qnode(dev, interface="torch")
         def circuit(inputs):
-            for _ in range(reps):
-                qml.AngleEmbedding(inputs, wires=range(n_qubits))
-
-                for i in range(n_qubits - 1):
-                    qml.CNOT(wires=[i, i + 1])
-                qml.CNOT(wires=[n_qubits - 1, 0])
-                for i in range(n_qubits - 2):
-                    qml.CNOT(wires=[i, i + 2])
-                qml.CNOT(wires=[n_qubits - 2, 0])
-                qml.CNOT(wires=[n_qubits - 1, 1])
-
+            qml.IQPEmbedding(inputs, wires=range(n_qubits), n_repeats=reps)
+            for i in range(n_qubits - 1):
+                qml.CNOT(wires=[i, i + 1])
+            qml.CNOT(wires=[n_qubits - 1, 0])
             return [qml.expval(qml.PauliZ(i)) for i in range(n_qubits)]
         
         self.qlayer = circuit
