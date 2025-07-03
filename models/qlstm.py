@@ -2,6 +2,7 @@ import torch
 import torch.nn as nn
 import pennylane as qml
 import time
+from .custom_iqp import IQPEmbeddingXX
 class QLSTM(nn.Module):
     def __init__(self, input_size, hidden_size, n_qubits, n_qlayers):
         super(QLSTM, self).__init__()
@@ -13,12 +14,12 @@ class QLSTM(nn.Module):
 
         self.memory_to_qubits = nn.Linear(hidden_size, n_qubits)
         
-        dev = qml.device("default.qubit", wires=self.n_qubits)
+        dev = qml.device("default.qubit", wires=n_qubits)
         reps = 3  # number of data‐upload repeats
 
         @qml.qnode(dev, interface="torch")
         def circuit(inputs):
-            qml.IQPEmbedding(inputs, wires=range(n_qubits), n_repeats=reps)
+            IQPEmbeddingXX(inputs, wires=range(n_qubits), n_repeats=reps)
             for i in range(n_qubits - 1):
                 qml.CNOT(wires=[i, i + 1])
             qml.CNOT(wires=[n_qubits - 1, 0])
