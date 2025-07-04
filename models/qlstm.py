@@ -18,6 +18,29 @@ class QLSTM(nn.Module):
         reps = 3  # number of data‐upload repeats
 
         @qml.qnode(dev, interface="torch")
+        # Original quantum circuit
+        # def circuit(inputs):
+        #     for _ in range(reps):
+        #         qml.AngleEmbedding(inputs, wires=range(n_qubits))
+        #         for i in range(n_qubits - 1):
+        #             qml.CNOT(wires=[i, i + 1])
+        #         qml.CNOT(wires=[n_qubits - 1, 0])
+        #         for i in range(n_qubits - 2):
+        #             qml.CNOT(wires=[i, i + 2])
+        #         qml.CNOT(wires=[n_qubits - 2, 0])
+        #         qml.CNOT(wires=[n_qubits - 1, 1])
+        #     return [qml.expval(qml.PauliZ(i)) for i in range(n_qubits)]
+        
+        
+        # Original quantum circuit with IQPEmbedding
+        # def circuit(inputs):
+        #     qml.IQPEmbedding(inputs, wires=range(n_qubits), n_repeats=reps)
+        #     for i in range(n_qubits - 1):
+        #         qml.CNOT(wires=[i, i + 1])
+        #     qml.CNOT(wires=[n_qubits - 1, 0])
+        #     return [qml.expval(qml.PauliZ(i)) for i in range(n_qubits)]
+        
+        # Modified quantum circuit with IQPEmbeddingXX
         def circuit(inputs):
             IQPEmbeddingXX(inputs, wires=range(n_qubits), n_repeats=reps)
             for i in range(n_qubits - 1):
