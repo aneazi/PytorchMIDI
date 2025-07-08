@@ -3,6 +3,8 @@ import torch.nn as nn
 import pennylane as qml
 import time
 from .custom_iqp import IQPEmbeddingXX
+from .Ising_SEL import Ising_SEL
+
 class QLSTM(nn.Module):
     def __init__(self, input_size, hidden_size, n_qubits, n_qlayers):
         super(QLSTM, self).__init__()
@@ -32,7 +34,7 @@ class QLSTM(nn.Module):
         #     return [qml.expval(qml.PauliZ(i)) for i in range(n_qubits)]
         
         
-        # Original quantum circuit with IQPEmbedding
+        # Quantum circuit with IQPEmbedding
         # def circuit(inputs):
         #     qml.IQPEmbedding(inputs, wires=range(n_qubits), n_repeats=reps)
         #     for i in range(n_qubits - 1):
@@ -47,6 +49,13 @@ class QLSTM(nn.Module):
                 qml.CNOT(wires=[i, i + 1])
             qml.CNOT(wires=[n_qubits - 1, 0])
             return [qml.expval(qml.PauliZ(i)) for i in range(n_qubits)]
+        
+        # Modified SEL with IsingXX
+        # def circuit(inputs):
+        #     for _ in range(reps):
+        #         Ising_SEL(inputs, wires=range(n_qubits), n_repeats=1, pattern=[[0, 1], [1, 2], [2, 3], [3, 0]])
+        #         Ising_SEL(inputs, wires=range(n_qubits), n_repeats=1, pattern=[[0, 2], [1, 3], [2, 0], [3, 1]])
+        #     return [qml.expval(qml.PauliZ(i)) for i in range(n_qubits)]
         
         self.qlayer = circuit
         self.qubits_to_memory = nn.Linear(n_qubits, hidden_size)

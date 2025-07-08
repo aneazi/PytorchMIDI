@@ -153,7 +153,7 @@ def main():
     # 4) Export to MIDI
     notes_to_midi(gen_df, output_midi, instrument_name)
     print("Wrote generated MIDI to", output_midi)
-    # # 5) Play via pygame
+    # 5) Play via pygame
     # freq = 44100  # audio CD quality
     # bitsize = -16   # unsigned 16 bit
     # channels = 1  # 1 is mono, 2 is stereo

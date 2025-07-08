@@ -15,7 +15,7 @@ def visualize_quantum_circuits():
     
     # Create a QLSTM instance with default parameters
     qlstm = QLSTM(
-        input_size=3,
+        input_size=4,
         hidden_size=128,
         n_qubits=4,  # Updated to match your current config
         n_qlayers=1,
