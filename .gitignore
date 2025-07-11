@@ -10,3 +10,4 @@ classical_slurm.err
 __pycache__/
 *.py[cod]
 .DS_Store
+.idea/
