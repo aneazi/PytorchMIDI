@@ -18,6 +18,6 @@ CLASSICAL_SEED_DIR: "myDataset"
 CLASSICAL_OUTPUT_PATH: "outputs/music/test.mid"
 
 # Quantum Specs
-QUANTUM_MODEL_PATH: "outputs/models/memory/Ising_SEL_10.pt"
+QUANTUM_MODEL_PATH: "outputs/models/memory/iqp_xx_rnn_10.pt"
 QUANTUM_SEED_DIR: "myDataset"
-QUANTUM_OUTPUT_PATH: "../MIDITesting/midi_files/iqp/output20.mid"
+QUANTUM_OUTPUT_PATH: "../MIDITesting/midi_files/iqp_xx/output20.mid"
